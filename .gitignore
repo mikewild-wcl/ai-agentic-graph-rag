@@ -421,9 +421,6 @@ FodyWeavers.xsd
 **/appSettings.Development.json
 local.settings.development.json
 
-# Benchmark.Net folder
-BenchmarkDotNet.Artifacts/
-
 # Private data files
 private/
 .private/

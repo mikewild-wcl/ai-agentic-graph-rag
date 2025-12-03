@@ -51,16 +51,16 @@ public sealed class EinsteinQueryService(
         var stepBackEmbedding = await _embeddingGenerator.GenerateVectorAsync(stepBackPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
         var stepBackSearchResults = await _dataAccess.QuerySimilarRecords(stepBackEmbedding).ConfigureAwait(false);
 
-        var standardResponse = await GenerateQuestionResponse(userInput, searchResults.Select(r => r.Text).ToList(), cancellationToken).ConfigureAwait(false);
-        var stepBackResponse = await GenerateQuestionResponse(stepBackPrompt, stepBackSearchResults.Select(r => r.Text).ToList(), cancellationToken).ConfigureAwait(false);
+        var standardResponse = await GenerateQuestionResponse(userInput, [.. searchResults.Select(r => r.Text)], cancellationToken).ConfigureAwait(false);
+        var stepBackResponse = await GenerateQuestionResponse(stepBackPrompt, [.. stepBackSearchResults.Select(r => r.Text)], cancellationToken).ConfigureAwait(false);
 
         return new EinsteinQueryResult
         {
             StandardResponse = standardResponse,
             RewrittenQuery = stepBackPrompt,
             StepBackResponse = stepBackResponse,
-            StandardSearchResults = searchResults.ToList(),
-            StepBackSearchResults = stepBackSearchResults.ToList()
+            StandardSearchResults = [.. searchResults],
+            StepBackSearchResults = [.. stepBackSearchResults]
         };
     }
 

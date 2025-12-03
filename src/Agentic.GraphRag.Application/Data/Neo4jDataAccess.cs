@@ -46,7 +46,7 @@ public abstract class Neo4jDataAccess : INeo4jDataAccess
     {
         try
         {
-            parameters = parameters == null ? new Dictionary<string, object>() : parameters;
+            parameters ??= new Dictionary<string, object>();
 
             var result = await _session.ExecuteReadAsync(async tx =>
             {
@@ -68,7 +68,7 @@ public abstract class Neo4jDataAccess : INeo4jDataAccess
     {
         try
         {
-            parameters = parameters == null ? new Dictionary<string, object>() : parameters;
+            parameters ??= new Dictionary<string, object>();
 
             var result = await _session.ExecuteWriteAsync(async tx =>
             {
@@ -89,7 +89,7 @@ public abstract class Neo4jDataAccess : INeo4jDataAccess
     {
         try
         {
-            parameters = parameters == null ? new Dictionary<string, object>() : parameters;
+            parameters ??= new Dictionary<string, object>();
 
             var result = await _session.ExecuteWriteAsync(async tx =>
             {
@@ -111,7 +111,7 @@ public abstract class Neo4jDataAccess : INeo4jDataAccess
     {
         try
         {
-            parameters = parameters == null ? new Dictionary<string, object>() : parameters;
+            parameters ??= new Dictionary<string, object>();
 
             var result = await _session.ExecuteReadAsync(async tx =>
             {

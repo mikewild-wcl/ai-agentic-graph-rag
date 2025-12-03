@@ -7,5 +7,3 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Minor Code Smell", "S101:Types should be named in PascalCase", Justification = "<Pending>", Scope = "type", Target = "~T:Agentic.GraphRag.Application.Data.Interfaces.INeo4jDataAccess")]
 [assembly: SuppressMessage("Minor Code Smell", "S101:Types should be named in PascalCase", Justification = "<Pending>", Scope = "type", Target = "~T:Agentic.GraphRag.Application.Data.Neo4jDataAccess")]
-[assembly: SuppressMessage("Minor Code Smell", "S101:Types should be named in PascalCase", Justification = "<Pending>", Scope = "type", Target = "~T:Agentic.GraphRag.Application.UnitTests.Data.Neo4jDataAccessTests")]
-[assembly: SuppressMessage("Minor Code Smell", "S101:Types should be named in PascalCase", Justification = "<Pending>", Scope = "type", Target = "~T:Agentic.GraphRag.Application.UnitTests.Data.Neo4jDataAccessTests.TestNeo4jDataAccess")]
