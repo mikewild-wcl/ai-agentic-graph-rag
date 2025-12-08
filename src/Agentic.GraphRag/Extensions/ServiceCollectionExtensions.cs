@@ -39,7 +39,11 @@ internal static class ServiceCollectionExtensions
         });
 
         services.AddSingleton(
-            new ChatClientAgentOptions(instructions: "You are good at telling jokes.", name: "Joker"));
+            new ChatClientAgentOptions
+            {
+                Name = "Joker",
+                ChatOptions = new() { Instructions = "You are good at telling jokes." }
+            });
 
         services.AddKeyedChatClient(ServiceKeys.AzureOpenAIChatClient, sp =>
         {

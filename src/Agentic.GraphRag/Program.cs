@@ -1,6 +1,5 @@
 using Agentic.GraphRag.Components;
 using Agentic.GraphRag.Extensions;
-using Microsoft.Agents.AI.DevUI;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,10 +40,5 @@ app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-if (builder.Environment.IsDevelopment())
-{
-    //app.MapDevUI();
-}
 
 await app.RunAsync().ConfigureAwait(false);
