@@ -4,6 +4,12 @@
     <Project Path="Agentic.GraphRag.ServiceDefaults/Agentic.GraphRag.ServiceDefaults.csproj" />
     <Project Path="Agentic.GraphRag.SharedConstants/Agentic.GraphRag.SharedConstants.csproj" Id="b63bec57-61ef-4550-86e3-7762d78fa6fa" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../Directory.Build.props" />
+    <File Path="../Directory.Packages.props" />
+    <File Path="../README.md" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Agentic.GraphRag.Application.UnitTests/Agentic.GraphRag.Application.UnitTests.csproj" />
   </Folder>

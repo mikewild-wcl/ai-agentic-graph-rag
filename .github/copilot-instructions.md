@@ -15,6 +15,6 @@
 
 ## Testing Guidelines
 - use xUnit for unit tests
-- use FluentAssertions version 7.2 for assertions
+- use FluentAssertions version 7.2.0 for assertions
 - Use Moq for mocking
 
