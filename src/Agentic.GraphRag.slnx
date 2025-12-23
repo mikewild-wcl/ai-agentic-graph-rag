@@ -2,7 +2,6 @@
   <Folder Name="/Aspire/">
     <Project Path="Agentic.GraphRag.AppHost/Agentic.GraphRag.AppHost.csproj" />
     <Project Path="Agentic.GraphRag.ServiceDefaults/Agentic.GraphRag.ServiceDefaults.csproj" />
-    <Project Path="Agentic.GraphRag.SharedConstants/Agentic.GraphRag.SharedConstants.csproj" Id="b63bec57-61ef-4550-86e3-7762d78fa6fa" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
@@ -14,5 +13,6 @@
     <Project Path="Agentic.GraphRag.Application.UnitTests/Agentic.GraphRag.Application.UnitTests.csproj" />
   </Folder>
   <Project Path="Agentic.GraphRag.Application/Agentic.GraphRag.Application.csproj" Id="a32814b8-7c4c-4159-807b-935696815587" />
+  <Project Path="Agentic.GraphRag.Shared/Agentic.GraphRag.Shared.csproj" Id="b63bec57-61ef-4550-86e3-7762d78fa6fa" />
   <Project Path="Agentic.GraphRag/Agentic.GraphRag.csproj" />
 </Solution>

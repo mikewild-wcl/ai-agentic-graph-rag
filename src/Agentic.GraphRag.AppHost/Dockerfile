@@ -1,5 +1,5 @@
-FROM neo4j:2025.09.0
-#FROM neo4j:latest
+#FROM neo4j:2025.09.0
+FROM neo4j:latest
 
 ENV NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
 

@@ -1,4 +1,4 @@
-﻿namespace Agentic.GraphRag.SharedConstants;
+﻿namespace Agentic.GraphRag.Shared;
 
 public static class ProjectNames
 {

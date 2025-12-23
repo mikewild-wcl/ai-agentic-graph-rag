@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Agentic.GraphRag.Application\Agentic.GraphRag.Application.csproj" />
     <ProjectReference Include="..\Agentic.GraphRag.ServiceDefaults\Agentic.GraphRag.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\Agentic.GraphRag.SharedConstants\Agentic.GraphRag.SharedConstants.csproj" />
+    <ProjectReference Include="..\Agentic.GraphRag.Shared\Agentic.GraphRag.Shared.csproj" />
   </ItemGroup>
 
 </Project>

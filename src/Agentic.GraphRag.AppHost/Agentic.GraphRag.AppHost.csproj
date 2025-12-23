@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Agentic.GraphRag.SharedConstants\Agentic.GraphRag.SharedConstants.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Agentic.GraphRag\Agentic.GraphRag.csproj" />
+    <ProjectReference Include="..\Agentic.GraphRag.Shared\Agentic.GraphRag.Shared.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
 
 </Project>

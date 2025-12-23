@@ -1,5 +1,5 @@
 using Agentic.GraphRag.AppHost.Extensions;
-using Agentic.GraphRag.SharedConstants;
+using Agentic.GraphRag.Shared;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -32,7 +32,8 @@ if (addDockerContainers && graphDBProvider.GetValue() == "neo4j")
         "neo4j", "./", "Dockerfile")
         .WithEndpoint(7474, scheme: "http", targetPort: 7474)
         .WithEndpoint(7687, scheme: "bolt", targetPort: 7687)
-        .WithEnvironment("NEO4J_AUTH", $"{graphDBUser.GetValue()}/{graphDBPassword.GetValue()}");
+        .WithEnvironment("NEO4J_AUTH", $"{graphDBUser.GetValue()}/{graphDBPassword.GetValue()}")
+        .WithLifetime(ContainerLifetime.Persistent);
 }
 else if (addDockerContainers && graphDBProvider.GetValue() == "memgraph")
 {
