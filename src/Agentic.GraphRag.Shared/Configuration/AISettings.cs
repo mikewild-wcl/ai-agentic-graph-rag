@@ -7,7 +7,6 @@ public record class AISettings(
     AIProvider Provider,
     string DeploymentName,
     string Model,
-    string EmbeddingDeploymentName,
     string EmbeddingModel,
     int? Timeout = 120)
 {
@@ -15,7 +14,7 @@ public record class AISettings(
     private string DebuggerDisplay =>
         $$"""
         Deployment = {{DeploymentName}}, 
-        Embedding Deployment = {{EmbeddingDeploymentName}}
+        Model = {{Model}}, 
+        Embedding Model = {{EmbeddingModel}}
         """;
 }
-

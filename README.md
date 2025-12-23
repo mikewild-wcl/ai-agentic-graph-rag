@@ -7,6 +7,11 @@ Parameters in the Aspire appsettings.json file `Parameters` section
 follow a convention of `SectionName-SettingName` with the hyphen acting as a separator.
 The same pattern is used when passing the resources , with : used as the seperator.
 
+## AI settings
+
+AI is configured to use one of several providers. This is based on https://chris-ayers.com/2025/07/06/aspire-with-lots-of-ai/ 
+and the corresponding git repository https://github.com/codebytes/build-with-aspire.
+
 ## Graph database - Neo4j
 
 How to get started with Neo4j see [Build applications with Neo4j and .NET](https://neo4j.com/docs/dotnet-manual/current/). 
@@ -89,12 +94,10 @@ Those warnings have been suppressed in the project file.
 
 ## TODO
 
-- add a unit test project and start with theory tests for simple chunking
+- Add parent-child splitting and save to neo4j
+- change to use 
 - make the chunking IAsyncEnumerable based
     - [link text](https://stackoverflow.com/questions/21136753/read-a-very-large-file-by-chunks-and-not-line-by-line/21137097#21137097)
-- add a service to the project that uses the chunking
-- implement the repository pattern for Neo4j access
-    - See 
 - Look at extracting and using UFO dataset
     - See chapter 5 of [sql_book](https://github.com/cathytanimura/sql_book)
     - [SQL book to R](https://iangow.github.io/sql_book/)
