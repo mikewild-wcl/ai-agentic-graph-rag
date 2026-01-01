@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "'Shared' keyword is only used in VB.NET'", Scope = "namespace", Target = "~N:Agentic.GraphRag.Shared")]
+[assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "'Shared' keyword is only used in VB.NET'", Scope = "namespace", Target = "~N:Agentic.GraphRag.Shared.Configuration")]

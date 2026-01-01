@@ -12,7 +12,7 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
 {
     private readonly ILogger<EinsteinDataAccess> _logger;
 
-#pragma warning disable CA1848 // Use the LoggerMessage delegates - can remove this when all logging is moved to delegates
+#pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable IDE0290 // Use primary constructor - disabled because of code passing options base class constructor call
     public EinsteinDataAccess(
         IDriver driver,
@@ -29,72 +29,71 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
 
     public async Task CreateFullTextIndexIfNotExists()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
+        const string indexName = "index_ftPdfChunk";
+
         try
         {
             await ExecuteWriteTransactionAsync(
-                """
-                CREATE FULLTEXT INDEX index_ftPdfChunk IF NOT EXISTS
+                $"""
+                CREATE FULLTEXT INDEX {indexName} IF NOT EXISTS
                 FOR (c:Chunk) 
                 ON EACH [c.text]
                 """).ConfigureAwait(false);
 
-            _logger.LogInformation(@"Created full-text index.");
+            _logger.FullTextIndexCreated(indexName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while creating full-text index: {Message}", ex.Message);
+            _logger.FullTextIndexCreationFailed(ex, indexName);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public async Task CreateChunkVectorIndexIfNotExists()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
+        const string indexName = "index_pdfChunk";
+
         try
         {
             await ExecuteWriteTransactionAsync(
-                """
-                CREATE VECTOR INDEX index_pdfChunk IF NOT EXISTS 
+                $"""
+                CREATE VECTOR INDEX {indexName} IF NOT EXISTS 
                 FOR (c:Chunk)
                 ON c.embedding
                 """).ConfigureAwait(false);
 
-            _logger.LogInformation("Created vector index 'index_pdfChunk'.");
+            _logger.VectorIndexCreated(indexName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while creating vector index: {Message}", ex.Message);
+            _logger.VectorIndexCreationFailed(ex, indexName);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public async Task CreateChildVectorIndexIfNotExists()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
+        const string indexName = "index_parent";
+
         try
         {
             await ExecuteWriteTransactionAsync(
-                """
-                CREATE VECTOR INDEX index_parent IF NOT EXISTS
+                $"""
+                CREATE VECTOR INDEX {indexName} IF NOT EXISTS
                 FOR (c:Child)
                 ON c.embedding
                 """).ConfigureAwait(false);
 
-            _logger.LogInformation("Created vector index 'index_parent'.");
+            _logger.VectorIndexCreated(indexName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while creating vector index: {Message}", ex.Message);
+            _logger.VectorIndexCreationFailed(ex, indexName);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public async Task<IList<RankedSearchResult>> QuerySimilarRecords(ReadOnlyMemory<float> queryEmbedding, int k = 3)
     {
         List<RankedSearchResult> rankedResults = [];
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             var results = await ExecuteReadDictionaryAsync(
@@ -121,16 +120,14 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while querying similar records: {Message}", ex.Message);
+            _logger.QuerySimilarRecordsFailed(ex);
         }
 
         return rankedResults;
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     public async Task RemoveExistingData()
     {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             await ExecuteWriteTransactionAsync("DROP INDEX index_ftPdfChunk IF EXISTS;").ConfigureAwait(false);
@@ -141,11 +138,11 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
             await ExecuteWriteTransactionAsync("MATCH (c:Child) DETACH DELETE c;").ConfigureAwait(false);
             await ExecuteWriteTransactionAsync("MATCH (p:Parent) DETACH DELETE p;").ConfigureAwait(false);
 
-            _logger.LogInformation(@"Removed existing data and indexes from database.");
+            _logger.ExistingDataAndIndexesRemoved();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while creating full-text index: {Message}", ex.Message);
+            _logger.RemovingExistingDataAndIndexesFailed(ex);
         }
     }
 
@@ -158,11 +155,10 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
 
         if (chunks.Count == 0 || embeddings.Count == 0)
         {
-            _logger.LogWarning("No chunks or embeddings to save.");
+            _logger.NoChunksOrEmbeddingsToSave();
             return;
         }
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             await ExecuteWriteTransactionAsync(
@@ -181,14 +177,45 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
                 })
                 .ConfigureAwait(false);
 
-            _logger.LogInformation("saving {ChunkCount} text chunks and {EmbeddingCount} embeddings.", chunks.Count, embeddings.Count);
+            _logger.ChunksAndEmbeddingsSaved(chunks.Count, embeddings.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error while saving text chunks and embeddings: {Message}", ex.Message);
+            _logger.SavingChunksOrEmbeddingsFailed(ex);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
+    public async Task SaveParentAndChildChunks(IReadOnlyList<string> chunks, IReadOnlyList<ReadOnlyMemory<float>> embeddings, int startIndex = 0)
+    {
+        if (chunks is null || embeddings is null || chunks.Count != embeddings.Count * 2)
+        {
+            throw new ArgumentException("Chunks and embeddings must be non-null and have the correct counts.");
+        }
+        if (chunks.Count == 0 || embeddings.Count == 0)
+        {
+            _logger.NoParentChildChunksOrEmbeddingsToSave();
+        }
+
+        try
+        {
+            /*
+            MERGE (pdf:PDF {id:$pdf_id})
+            MERGE (p:Parent {id:$pdf_id + '-' + $id})
+            SET p.text = $parent
+            MERGE (pdf)-[:HAS_PARENT]->(p)
+            WITH p, $children AS children, $embeddings as embeddings
+            UNWIND range(0, size(children) - 1) AS child_index
+            MERGE (c:Child {id: $pdf_id + '-' + $id + '-' + toString(child_index)})
+            SET c.text = children[child_index], c.embedding = embeddings[child_index]
+            MERGE (p)-[:HAS_CHILD]->(c);     */
+
+            //TODO: Add a logger method that includes the correct counts
+            _logger.ChunksAndEmbeddingsSaved(chunks.Count, embeddings.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.SavingChunksOrEmbeddingsFailed(ex);
+        }
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
 }
