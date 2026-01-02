@@ -69,7 +69,6 @@ If using Memgraph as a replacement for Neo4j, see:
 - https://stackoverflow.com/questions/74528361/how-can-i-connect-to-memgraph-from-my-c-sharp-application
 - https://memgraph.com/blog/how-to-build-a-flight-network-analysis-graph-asp-net-application-with-memgraph-c-sharp-and-d3-js
 
-
 ## Docker
 
 See [Add Dockerfiles](https://learn.microsoft.com/en-us/dotnet/aspire/app-host/withdockerfile#add-a-dockerfile-to-the-app-model) 
@@ -80,19 +79,24 @@ file has been renamed to `Dockerfile_simple_python` and it loads and runs a simp
 
 https://neo4j.com/docs/operations-manual/current/docker/introduction/ 
 
-
 ## Code style and analysis
 
 The ServiceDefaults project was created by the Aspire template and there are a number of code analysis warnings in the project.
 Those warnings have been suppressed in the project file.
 
 
+## Einstein sample
+        
+Inspired by the book Essential GraphRAG. Some code was adapted and translated from  the book code repository:
+
+- [chapter 2](https://github.com/tomasonjo/kg-rag/blob/main/notebooks/ch02.ipynb)
+- [chapter 3](https://github.com/tomasonjo/kg-rag/blob/main/notebooks/ch03.ipynb).
+
 ## TODO
 
-- add a unit test project and start with theory tests for simple chunking
+- add more unit tests
 - make the chunking IAsyncEnumerable based
     - [link text](https://stackoverflow.com/questions/21136753/read-a-very-large-file-by-chunks-and-not-line-by-line/21137097#21137097)
-- add a service to the project that uses the chunking
 - implement the repository pattern for Neo4j access
     - See 
 - Look at extracting and using UFO dataset

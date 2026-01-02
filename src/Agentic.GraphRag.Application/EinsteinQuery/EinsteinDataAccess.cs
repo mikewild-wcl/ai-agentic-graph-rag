@@ -12,6 +12,10 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
 {
     private readonly ILogger<EinsteinDataAccess> _logger;
 
+    const string ParentChildVectorIndexName = "index_parent";
+    const string PdfFullTextIdexName = "index_ftPdfChunk";
+    const string PdfVectorIndexName = "index_pdfChunk";
+
 #pragma warning disable CA1031 // Do not catch general exception types
 #pragma warning disable IDE0290 // Use primary constructor - disabled because of code passing options base class constructor call
     public EinsteinDataAccess(
@@ -29,64 +33,58 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
 
     public async Task CreateFullTextIndexIfNotExists()
     {
-        const string indexName = "index_ftPdfChunk";
-
         try
         {
             await ExecuteWriteTransactionAsync(
                 $"""
-                CREATE FULLTEXT INDEX {indexName} IF NOT EXISTS
+                CREATE FULLTEXT INDEX {PdfFullTextIdexName} IF NOT EXISTS
                 FOR (c:Chunk) 
                 ON EACH [c.text]
                 """).ConfigureAwait(false);
 
-            _logger.FullTextIndexCreated(indexName);
+            _logger.FullTextIndexCreated(PdfFullTextIdexName);
         }
         catch (Exception ex)
         {
-            _logger.FullTextIndexCreationFailed(ex, indexName);
+            _logger.FullTextIndexCreationFailed(ex, PdfFullTextIdexName);
         }
     }
 
     public async Task CreateChunkVectorIndexIfNotExists()
     {
-        const string indexName = "index_pdfChunk";
-
         try
         {
             await ExecuteWriteTransactionAsync(
                 $"""
-                CREATE VECTOR INDEX {indexName} IF NOT EXISTS 
+                CREATE VECTOR INDEX {PdfVectorIndexName} IF NOT EXISTS 
                 FOR (c:Chunk)
                 ON c.embedding
                 """).ConfigureAwait(false);
 
-            _logger.VectorIndexCreated(indexName);
+            _logger.VectorIndexCreated(PdfVectorIndexName);
         }
         catch (Exception ex)
         {
-            _logger.VectorIndexCreationFailed(ex, indexName);
+            _logger.VectorIndexCreationFailed(ex, PdfVectorIndexName);
         }
     }
 
-    public async Task CreateChildVectorIndexIfNotExists()
+    public async Task CreateParentChildVectorIndexIfNotExists()
     {
-        const string indexName = "index_parent";
-
         try
         {
             await ExecuteWriteTransactionAsync(
                 $"""
-                CREATE VECTOR INDEX {indexName} IF NOT EXISTS
+                CREATE VECTOR INDEX {ParentChildVectorIndexName} IF NOT EXISTS
                 FOR (c:Child)
                 ON c.embedding
                 """).ConfigureAwait(false);
 
-            _logger.VectorIndexCreated(indexName);
+            _logger.VectorIndexCreated(ParentChildVectorIndexName);
         }
         catch (Exception ex)
         {
-            _logger.VectorIndexCreationFailed(ex, indexName);
+            _logger.VectorIndexCreationFailed(ex, ParentChildVectorIndexName);
         }
     }
 
@@ -116,6 +114,45 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
                     x["text"] as string ?? string.Empty,
                     Convert.ToDouble(x["score"], CultureInfo.InvariantCulture),
                     Convert.ToInt32(x["index"], CultureInfo.InvariantCulture)
+                )));
+        }
+        catch (Exception ex)
+        {
+            _logger.QuerySimilarRecordsFailed(ex);
+        }
+
+        return rankedResults;
+    }
+
+    public async Task<IList<RankedSearchResult>> QueryParentsAndChildren(ReadOnlyMemory<float> queryEmbedding, int k = 3)
+    {
+        List<RankedSearchResult> rankedResults = [];
+
+        try
+        {
+            var results = await ExecuteReadDictionaryAsync(
+                $"""
+                CALL db.index.vector.queryNodes({ParentChildVectorIndexName}, $k * 4, $question_embedding)
+                YIELD node, score
+                MATCH (node)<-[:HAS_CHILD]-(parent)
+                WITH parent, max(score) AS score
+                RETURN parent.text AS text, score
+                ORDER BY score DESC
+                LIMIT toInteger($k)
+                """,
+                "rankedResult",
+                new Dictionary<string, object>
+                {
+                    { "k", 2 }, // k as in in KNN - number of nearest neighbors
+                    { "question_embedding", queryEmbedding.ToArray() }
+                })
+                .ConfigureAwait(false);
+
+            rankedResults.AddRange(results.Select(x =>
+                new RankedSearchResult(
+                    x["text"] as string ?? string.Empty,
+                    Convert.ToDouble(x["score"], CultureInfo.InvariantCulture),
+                    -1 // Index is not applicable here
                 )));
         }
         catch (Exception ex)
@@ -185,32 +222,51 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
         }
     }
 
-    public async Task SaveParentAndChildChunks(IReadOnlyList<string> chunks, IReadOnlyList<ReadOnlyMemory<float>> embeddings, int startIndex = 0)
+    public async Task SaveParentAndChildChunks(
+        string pdfId,
+        int parentChunkId, 
+        string parentChunk, 
+        IReadOnlyList<string> childChunks, 
+        IReadOnlyList<ReadOnlyMemory<float>> embeddings)
     {
-        if (chunks is null || embeddings is null || chunks.Count != embeddings.Count * 2)
+        ArgumentNullException.ThrowIfNull(pdfId);
+        ArgumentNullException.ThrowIfNull(parentChunk);
+
+        if (childChunks is null || embeddings is null || childChunks.Count != embeddings.Count * 2)
         {
             throw new ArgumentException("Chunks and embeddings must be non-null and have the correct counts.");
         }
-        if (chunks.Count == 0 || embeddings.Count == 0)
+
+        if (childChunks.Count == 0 || embeddings.Count == 0)
         {
             _logger.NoParentChildChunksOrEmbeddingsToSave();
         }
 
         try
         {
-            /*
-            MERGE (pdf:PDF {id:$pdf_id})
-            MERGE (p:Parent {id:$pdf_id + '-' + $id})
-            SET p.text = $parent
-            MERGE (pdf)-[:HAS_PARENT]->(p)
-            WITH p, $children AS children, $embeddings as embeddings
-            UNWIND range(0, size(children) - 1) AS child_index
-            MERGE (c:Child {id: $pdf_id + '-' + $id + '-' + toString(child_index)})
-            SET c.text = children[child_index], c.embedding = embeddings[child_index]
-            MERGE (p)-[:HAS_CHILD]->(c);     */
+            await ExecuteWriteTransactionAsync(
+                """
+                MERGE (pdf:PDF {id:$pdf_id})
+                MERGE (p:Parent {id:$pdf_id + '-' + $id})
+                SET p.text = $parent
+                MERGE (pdf)-[:HAS_PARENT]->(p)
+                WITH p, $children AS children, $embeddings as embeddings
+                UNWIND range(0, size(children) - 1) AS child_index
+                MERGE (c:Child {id: $pdf_id + '-' + $id + '-' + toString(child_index)})
+                SET c.text = children[child_index], c.embedding = embeddings[child_index]
+                MERGE (p)-[:HAS_CHILD]->(c)
+                """,
+                new Dictionary<string, object>
+                {
+                    { "pdf_id", pdfId },
+                    { "id", parentChunkId },
+                    { "parent", parentChunk },
+                    { "children", childChunks},
+                    { "embeddings", embeddings.Select(e => e.ToArray()).ToList() }
+                })
+                .ConfigureAwait(false);
 
-            //TODO: Add a logger method that includes the correct counts
-            _logger.ChunksAndEmbeddingsSaved(chunks.Count, embeddings.Count);
+            _logger.ParentChildChunksAndEmbeddingsSaved(pdfId, parentChunkId, childChunks.Count, embeddings.Count);
         }
         catch (Exception ex)
         {

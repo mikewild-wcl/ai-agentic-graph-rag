@@ -8,6 +8,9 @@ internal static class EinsteinLoggingExtensions
     public static void ChunksAndEmbeddingsSaved(this ILogger logger, int chunkCount, int mbeddingCount) =>
         _logChunksAndEmbeddingsSaved(logger, chunkCount, mbeddingCount, default!);
 
+    public static void ParentChildChunksAndEmbeddingsSaved(this ILogger logger, string pdfId, int parentChunkId, int chunkCount, int mbeddingCount) =>
+        _logParentChildChunksAndEmbeddingsSaved(logger, pdfId, parentChunkId, chunkCount, mbeddingCount, default!);
+
     public static void FullTextIndexCreated(this ILogger logger, string indexName) =>
         _logFullTextIndexCreated(logger, indexName, default!);
 
@@ -100,6 +103,12 @@ internal static class EinsteinLoggingExtensions
             LogLevel.Information,
             new EventId(1, nameof(ChunksAndEmbeddingsSaved)),
             "Saved {ChunkCount} text chunks and {EmbeddingCount} embeddings.");
+
+    private static readonly Action<ILogger, string, int, int, int, Exception> _logParentChildChunksAndEmbeddingsSaved =
+        LoggerMessage.Define<string, int, int, int>(
+            LogLevel.Information,
+            new EventId(1, nameof(ChunksAndEmbeddingsSaved)),
+            "Saved {ChunkCount} text chunks and {EmbeddingCount} embeddings for pdf id '{ParentId}' chunk {ParentChunkId}.");
 
     private static readonly Action<ILogger, Exception?> _logSavingChunksOrEmbeddingsException =
         LoggerMessage.Define(
