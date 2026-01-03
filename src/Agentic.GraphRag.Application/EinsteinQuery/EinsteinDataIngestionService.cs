@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery;
 
@@ -24,6 +25,8 @@ public sealed class EinsteinDataIngestionService(
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
     private readonly EinsteinQuerySettings _querySettings = queryOptions.Value;
     private readonly ILogger<EinsteinDataIngestionService> _logger = logger;
+
+    private const int BatchSize = 10;
 
     private static readonly Action<ILogger, string, Exception?> _fileNotFoundLog =
         LoggerMessage.Define<string>(
@@ -47,7 +50,6 @@ public sealed class EinsteinDataIngestionService(
     {
         //TODO: Move data load to EinsteinDataIngestionService to handle this workflow
 
-#pragma warning disable CA1848 // Use the LoggerMessage delegates - can remove this when all logging is moved to delegates
         _logLoadDataCalled(_logger, "LoadData called", null);
 
         await _downloadService.DownloadFileIfNotExists(_querySettings.DocumentUri, _querySettings.DocumentFileName, cancellationToken).ConfigureAwait(false);
@@ -58,65 +60,14 @@ public sealed class EinsteinDataIngestionService(
             return;
         }
 
-        //TODO: Move above await and get private TryGetDownloadedFilePath local method 
-        //TODO: Move below to private PrepareDatabase method
-        await _dataAccess.RemoveExistingData().ConfigureAwait(false);
-        await _dataAccess.CreateChunkVectorIndexIfNotExists().ConfigureAwait(false);
-        await _dataAccess.CreateChildVectorIndexIfNotExists().ConfigureAwait(false);
+        await PrepareDatabase().ConfigureAwait(false);
 
-        var chunks = new List<string>();
-        var embeddings = new List<ReadOnlyMemory<float>>();
-
-        const int batchSize = 10;
-        var batchIndex = 0;
-        var batch = new List<(string Chunks, ReadOnlyMemory<float> Embeddings)>(batchSize);
-
-        await foreach (var chunk in _documentChunker.StreamTextChunks(filePath, cancellationToken).ConfigureAwait(true))
-        {
-            if (string.IsNullOrWhiteSpace(chunk))
-            {
-                continue;
-            }
-
-            _logger.LogInformation("Chunk: {Chunk}", chunk);
-            var embedding = await _embeddingGenerator.GenerateVectorAsync(chunk, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                LogEmbedding(embedding);
-            }
-
-            chunks.Add(chunk);
-            embeddings.Add(embedding);
-            batch.Add((chunk, embedding));
-            if (batch.Count >= batchSize)
-            {
-                await _dataAccess.SaveTextChunks(
-                    [.. batch.Select(x => x.Chunks)],
-                    [.. batch.Select(x => x.Embeddings)],
-                    batchIndex)
-                    .ConfigureAwait(false);
-
-                batchIndex += batch.Count;
-                batch.Clear();
-            }
-        }
-
-        if (batch.Count >= 0)
-        {
-            await _dataAccess.SaveTextChunks(
-                [.. batch.Select(x => x.Chunks)],
-                [.. batch.Select(x => x.Embeddings)],
-                batchIndex)            
-                .ConfigureAwait(false);
-        }
-
-        //TODO: Also create parent and child data
-        //      see https://github.com/tomasonjo/kg-rag/blob/main/notebooks/ch03.ipynb
+        await ExtractAndSaveTextChunks(filePath, cancellationToken).ConfigureAwait(false);
+        await ExtractAndSaveParentAndChildChunks(filePath, cancellationToken).ConfigureAwait(false);
 
         await _dataAccess.CreateFullTextIndexIfNotExists().ConfigureAwait(false);
 
         _logLoadDataComplete(_logger, _querySettings.DocumentUri.ToString(), _querySettings.DocumentFileName, null);
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
     }
 
     private void LogEmbedding(ReadOnlyMemory<float> embedding)
@@ -135,5 +86,91 @@ public sealed class EinsteinDataIngestionService(
             _logger.LogInformation("Embedding {EmbeddingString}", embeddingString);
         }
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
+    }
+
+    private async Task PrepareDatabase()
+    {
+        await _dataAccess.RemoveExistingData().ConfigureAwait(false);
+        await _dataAccess.CreateChunkVectorIndexIfNotExists().ConfigureAwait(false);
+        await _dataAccess.CreateParentChildVectorIndexIfNotExists().ConfigureAwait(false);
+    }
+
+    private async Task ExtractAndSaveTextChunks(string filePath, CancellationToken cancellationToken)
+    {
+        var chunks = new List<string>();
+        var embeddings = new List<ReadOnlyMemory<float>>();
+
+        var batchIndex = 0;
+        var batch = new List<(string Chunks, ReadOnlyMemory<float> Embeddings)>(BatchSize);
+
+        await foreach (var chunk in _documentChunker.StreamTextChunks(filePath, cancellationToken).ConfigureAwait(true))
+        {
+            if (string.IsNullOrWhiteSpace(chunk))
+            {
+                continue;
+            }
+
+#pragma warning disable CA1848 // Use the LoggerMessage delegates - can remove this when all logging is moved to delegates
+            _logger.LogInformation("Chunk: {Chunk}", chunk);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
+            var embedding = await _embeddingGenerator.GenerateVectorAsync(chunk, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                LogEmbedding(embedding);
+            }
+
+            chunks.Add(chunk);
+            embeddings.Add(embedding);
+            batch.Add((chunk, embedding));
+            if (batch.Count >= BatchSize)
+            {
+                await _dataAccess.SaveTextChunks(
+                    [.. batch.Select(x => x.Chunks)],
+                    [.. batch.Select(x => x.Embeddings)],
+                    batchIndex)
+                    .ConfigureAwait(false);
+
+                batchIndex += batch.Count;
+                batch.Clear();
+            }
+        }
+
+        if (batch.Count > 0)
+        {
+            await _dataAccess.SaveTextChunks(
+                [.. batch.Select(x => x.Chunks)],
+                [.. batch.Select(x => x.Embeddings)],
+                batchIndex)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private async Task ExtractAndSaveParentAndChildChunks(string filePath, CancellationToken cancellationToken)
+    {
+        var pdfIdPattern = new Regex(@"(?<=/)([^/]+)(?=\\.pdf(?:\\?|$))");
+        var pdfId = pdfIdPattern.Matches(filePath).FirstOrDefault()?.ToString() ?? "unknown";
+
+        await foreach (var section in _documentChunker.StreamSections(filePath, cancellationToken).ConfigureAwait(true))
+        {
+            if (string.IsNullOrWhiteSpace(section.SectionText))
+            {
+                continue;
+            }
+
+            var embeddings = new List<ReadOnlyMemory<float>>();
+            foreach (var chunk in section.ChildChunks)
+            {
+                var embedding = await _embeddingGenerator.GenerateVectorAsync(chunk, cancellationToken: cancellationToken).ConfigureAwait(false);
+                embeddings.Add(embedding);
+            }
+
+            await _dataAccess.SaveParentAndChildChunks(
+                pdfId,
+                section.SectionId,
+                section.SectionText,
+                section.ChildChunks,
+                embeddings)
+                .ConfigureAwait(false);
+        }
     }
 }
