@@ -272,4 +272,5 @@ dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 
 # Disable specific rules
+dotnet_diagnostic.CA1308.severity = none
 dotnet_diagnostic.CA1515.severity = none

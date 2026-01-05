@@ -12,6 +12,36 @@ The same pattern is used when passing the resources , with : used as the seperat
 AI is configured to use one of several providers. This is based on https://chris-ayers.com/2025/07/06/aspire-with-lots-of-ai/ 
 and the corresponding git repository https://github.com/codebytes/build-with-aspire.
 
+To set this up:
+
+- Add model integration nuget packages to the AppHost project.
+  - Aspire.Hosting.GitHub.Models
+  - Aspire.Hosting.Azure.AIFoundry
+  - Aspire.Hosting.Azure.CognitiveServices
+  - CommunityToolkit.Aspire.Hosting.Ollama
+
+- Add appSettings.<environment>.json files with the relevant settings for each provider. appsettings.Development.json can be used as the default.
+  - appsettings.AzureOpenAI.json
+  - appsettings.Development.json
+  - appsettings.GitHubModels.json
+  - appsettings.Ollama.json
+
+- Change Properties\launchSettings.json to include profiles for each AI provider. Those profiles can be copied from the existing https profile,
+  and the ASPNETCORE_ENVIRONMENT and DOTNET_ENVIRONMENT variables changed to match the <environment> on the appSettings files. 
+  This will allow the project to be run in Visual Studio using different AI providers by selecting the relevant profile.
+
+- Add an extension class AIModelExtensions to the AppHost project. This will load the relevant AI model based on the configured provider.
+- Modify Program.cs in the AppHost project to use the AIModelExtensions class to add the AI model to the service collection.
+- ```
+    var aiService = builder.AddAIModel();
+    var aiService = builder.AddAIEmbeddingModel();
+    var (aiModel, aiEmbeddingModel) = builder.AddAIEmbeddingModel(); 
+  ```
+ 
+- For Github Models, make sure to add your GitHub API key either as a parameter in user secrtets `{name}-gh-apikey` where `name` is the name of the deployment in your configuration, 
+  or in the GITHUB_TOKEN environment variable.
+
+ 
 ## Graph database - Neo4j
 
 How to get started with Neo4j see [Build applications with Neo4j and .NET](https://neo4j.com/docs/dotnet-manual/current/). 
