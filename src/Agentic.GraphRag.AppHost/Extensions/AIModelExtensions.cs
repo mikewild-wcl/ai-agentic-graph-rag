@@ -3,11 +3,12 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Agentic.GraphRag.AppHost.Extensions;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Maintainability", "S3398:\"private\" methods called only by inner classes should be moved to those classe", Justification = "False positive in extensions class")]
+[SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
+[SuppressMessage("Maintainability", "S3398:\"private\" methods called only by inner classes should be moved to those classe", Justification = "False positive in extensions class")]
 internal static class AIModelExtensions
 {
     extension(IDistributedApplicationBuilder builder)
@@ -50,11 +51,50 @@ internal static class AIModelExtensions
                     $"Unsupported AI provider: {settings.Provider}")
             };
         }
+
+        public IResourceBuilder<IResourceWithConnectionString> AddAIEmbeddingModels(
+            string name = "ai-service")
+        {
+            var settings = builder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
+
+            var logger = builder.Services
+                ?.BuildServiceProvider()
+                ?.GetService<ILoggerFactory>()
+                ?.CreateLogger($"{typeof(AIModelExtensions).Namespace}.{nameof(AIModelExtensions)}");
+
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
+            logger?.LogInformation(
+                "Configuring AI: {Provider},  " +
+                "Deployment: {DeploymentName}, " +
+                "Model: {Model}, " +
+                "Embedding Model: {EmbeddingModel}",
+                settings.Provider,
+                settings.DeploymentName,
+                settings.Model,
+                settings.EmbeddingModel);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
+
+            Console.WriteLine(
+                $"Configuring AI: {settings.Provider},  " +
+                $"Deployment: {settings.DeploymentName}" +
+                $"Model: {settings.Model} " +
+                $"Embedding Model: {settings.EmbeddingModel}");
+
+            return settings.Provider switch
+            {
+                AIProvider.AzureOpenAI => ConfigureAzureOpenAI(builder, name, settings),
+                AIProvider.Ollama => ConfigureOllama(builder, name, settings),
+                AIProvider.GitHubModels => ConfigureGitHubModels(builder, settings),
+                AIProvider.AzureAIFoundry or AIProvider.AzureLocalFoundry => ConfigureAzureAIFoundry(builder, name, settings),
+                _ => throw new InvalidOperationException(
+                    $"Unsupported AI provider: {settings.Provider}")
+            };
+        }
     }
 
     extension(IResourceBuilder<ProjectResource> builder)
     {
-        public IResourceBuilder<ProjectResource> WithAIModel(
+        public IResourceBuilder<ProjectResource> WithAIModels(
             IResourceBuilder<IResourceWithConnectionString> aiService,
             string deploymentName = "chat",
             string? embeddingDeploymentName = null)
@@ -74,6 +114,40 @@ internal static class AIModelExtensions
             }
 
             return ConnectToAIService(builder, aiService, settings.Provider);
+        }
+
+        public IResourceBuilder<ProjectResource> WithAIService(
+            IResourceBuilder<IResourceWithConnectionString> aiService)
+        {
+            var settings = aiService.ApplicationBuilder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
+
+            builder
+                .WithEnvironment("AI:Provider", settings!.Provider.ToString().ToLowerInvariant());
+
+            return ConnectToAIService(builder, aiService, settings.Provider);
+        }
+
+        public IResourceBuilder<ProjectResource> WithAIModel(
+            IResourceBuilder<IResourceWithConnectionString> aiService,
+            string deploymentName = "chat")
+        {
+            var settings = aiService.ApplicationBuilder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
+
+            return builder
+                .WithEnvironment("AI:Provider", settings!.Provider.ToString().ToLowerInvariant())
+                .WithEnvironment("AI:DeploymentName", deploymentName)
+                .WithEnvironment("AI:Model", settings.Model);
+        }
+
+        public IResourceBuilder<ProjectResource> WithAIEmbeddingModel(
+            IResourceBuilder<IResourceWithConnectionString> aiService,
+            string deploymentName = "embedding")
+        {
+            var settings = aiService.ApplicationBuilder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
+
+            return builder
+                .WithEnvironment("AI:EmbeddingDeploymentName", deploymentName)
+                .WithEnvironment("AI:EmbeddingModel", settings.EmbeddingModel);
         }
     }
 
@@ -155,6 +229,32 @@ internal static class AIModelExtensions
         }
 
         var model = ollama.AddModel(settings.DeploymentName, settings.Model);
+        //var embeddingModel = (!string.IsNullOrEmpty(settings.EmbeddingDeploymentName))
+        //    ? ollama.AddModel(settings.EmbeddingDeploymentName, settings.EmbeddingModel)
+        //    : null;
+
+        //return model;
+        return ollama;
+    }
+
+    private static IResourceBuilder<IResourceWithConnectionString> ConfigureOllamaEmbedding(
+        IDistributedApplicationBuilder builder,
+        string name,
+        AISettings settings)
+    {
+        var config = builder.Configuration;
+        var configuredVendor = config["AI:OllamaGpuVendor"];
+
+        var ollama = builder.AddOllama(name)
+            .WithDataVolume()
+            .WithOpenWebUI();
+
+        if (configuredVendor is not null && Enum.TryParse<OllamaGpuVendor>(configuredVendor, out var gpuVendor))
+        {
+            ollama!.WithGPUSupport(gpuVendor);
+        }
+
+        //var model = ollama.AddModel(settings.DeploymentName, settings.Model);
         var embeddingModel = (!string.IsNullOrEmpty(settings.EmbeddingDeploymentName))
             ? ollama.AddModel(settings.EmbeddingDeploymentName, settings.EmbeddingModel)
             : null;
@@ -214,5 +314,4 @@ internal static class AIModelExtensions
             _ => throw new InvalidOperationException($"Unknown provider: {provider}")
         };
     }
-
 }

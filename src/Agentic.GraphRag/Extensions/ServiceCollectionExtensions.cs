@@ -8,6 +8,7 @@ using Agentic.GraphRag.Application.Services;
 using Agentic.GraphRag.Application.Services.Interfaces;
 using Agentic.GraphRag.Application.Settings;
 using Agentic.GraphRag.Components;
+using Agentic.GraphRag.Shared.Configuration;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -20,13 +21,14 @@ namespace Agentic.GraphRag.Extensions;
 
 internal static class ServiceCollectionExtensions
 {
-    internal static IServiceCollection ConfigureOptions(this IServiceCollection services, IConfiguration configuration) =>
-        services
-            .Configure<AzureOpenAISettings>(configuration.GetSection(AzureOpenAISettings.SectionName))
-            .Configure<DownloadSettings>(configuration.GetSection(DownloadSettings.SectionName))
-            .Configure<EinsteinQuerySettings>(configuration.GetSection(EinsteinQuerySettings.SectionName))
-            .Configure<GraphDatabaseSettings>(configuration.GetSection(GraphDatabaseSettings.SectionName))
-            ;
+    //internal static IServiceCollection ConfigureOptions(this IServiceCollection services, IConfiguration configuration) =>
+    //    services
+    //        //.Configure<AISettings>(configuration.GetSection(AISettings.SectionName))
+    //        .Configure<AzureOpenAISettings>(configuration.GetSection(AzureOpenAISettings.SectionName))
+    //        .Configure<DownloadSettings>(configuration.GetSection(DownloadSettings.SectionName))
+    //        .Configure<EinsteinQuerySettings>(configuration.GetSection(EinsteinQuerySettings.SectionName))
+    //        .Configure<GraphDatabaseSettings>(configuration.GetSection(GraphDatabaseSettings.SectionName))
+    //        ;
 
     internal static IServiceCollection RegisterAIAgentServices(this IServiceCollection services)
     {

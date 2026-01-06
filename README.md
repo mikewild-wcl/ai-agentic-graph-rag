@@ -41,6 +41,10 @@ To set this up:
 - For Github Models, make sure to add your GitHub API key either as a parameter in user secrtets `{name}-gh-apikey` where `name` is the name of the deployment in your configuration, 
   or in the GITHUB_TOKEN environment variable.
 
+- On the client side, add the following nuget packages:
+    - Aspire.Azure.AI.OpenAI
+    - Aspire.Azure.AI.Inference
+    - CommunityToolkit.Aspire.Client.Ollama
  
 ## Graph database - Neo4j
 

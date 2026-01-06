@@ -1,6 +1,8 @@
-﻿namespace Agentic.GraphRag.AppHost.Extensions;
+﻿using System.Diagnostics.CodeAnalysis;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
+namespace Agentic.GraphRag.AppHost.Extensions;
+
+[SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
 internal static class ResourceBuilderExtensions
 {
     extension(IResourceBuilder<ParameterResource> parameter)

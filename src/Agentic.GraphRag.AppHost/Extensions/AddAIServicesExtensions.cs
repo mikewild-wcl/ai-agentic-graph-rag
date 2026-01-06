@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Agentic.GraphRag.AppHost.Extensions;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
-internal static class AddAIServicessExtensions
+[SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
+internal static class AddAIServicesExtensions
 {
     extension(IHostApplicationBuilder builder)
     {

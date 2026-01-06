@@ -6,17 +6,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.ConfigureOptions();
+
+builder.AddAIServices();
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services
-    .ConfigureOptions(builder.Configuration)
+    //.ConfigureOptions(builder.Configuration)
     .RegisterServices()
     .RegisterBlazorPersistenceServices()
     .RegisterHttpClients()
     .RegisterGraphDatabase()
-    .RegisterAIAgentServices();
+    //.RegisterAIAgentServices()
+    ;
 
 builder.Services.AddHsts(options =>
 {
