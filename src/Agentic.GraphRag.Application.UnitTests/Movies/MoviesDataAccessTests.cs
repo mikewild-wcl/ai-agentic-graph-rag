@@ -10,18 +10,14 @@ namespace Agentic.GraphRag.Application.UnitTests.Movies;
 public class MoviesDataAccessTests
 {
     private const string DATABASE_NAME = "moviesDb";
-    private const string DATABASE_NAME_FIELD = "_databaseName";
-
-    private readonly Uri Connection = new("bolt://localhost:7687");
-    private const string User = "Test";
-    private const string Password = "pass";
+    private const string DATABASE_NAME_FIELD = "_databaseName";        
 
     [Fact]
     public async Task Constructor_SetsDatabaseName()
     {
         // Arrange
         IOptions<GraphDatabaseSettings> options = new OptionsWrapper<GraphDatabaseSettings>(
-            new GraphDatabaseSettings(Connection, User, Password)
+            new GraphDatabaseSettings
             {
                 MoviesDb = DATABASE_NAME
             });
