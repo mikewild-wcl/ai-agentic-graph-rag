@@ -15,9 +15,9 @@ $(Pwd)
 
 #!csharp
 
-#r "nuget:Microsoft.Extensions.Configuration, 9.0.9"
-#r "nuget:Microsoft.Extensions.Configuration.Json, 9.0.7"
-#r "nuget:Neo4j.Driver, 5.28.3"
+#r "nuget:Microsoft.Extensions.Configuration, *-*"
+#r "nuget:Microsoft.Extensions.Configuration.Json, *-*"
+#r "nuget:Neo4j.Driver, *-*"
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;

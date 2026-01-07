@@ -10,12 +10,17 @@ Requires a running Neo4j instance
 
 Movies cypher file taken from https://github.com/neo4j-graph-examples/movies/blob/main/scripts/movies.cypher
 
+#!pwsh
+
+# Copy the cypher file into the Docker container (assumes Docker is running and the container is named 'neo4j-agentic-graphrag')
+docker cp "..\cypher\movies-graphrag-book-download.cypher" neo4j-agentic-graphrag:/import
+
 #!csharp
 
-#r "nuget:Microsoft.Extensions.Configuration, 9.0.9"
-#r "nuget:Microsoft.Extensions.Configuration.Json, 9.0.7"
-#r "nuget:Neo4j.Driver, 5.28.3"
-#r "nuget:System.Net.Http, 4.3.4"
+#r "nuget:Microsoft.Extensions.Configuration, *-*"
+#r "nuget:Microsoft.Extensions.Configuration.Json, *-*"
+#r "nuget:Neo4j.Driver, *-*"
+#r "nuget:System.Net.Http, *-*"
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
@@ -45,11 +50,6 @@ $"Neo4j details: Connection: {connectionUri}; auth user: {user}/{password}"
 var driver = GraphDatabase.Driver(connectionUri, AuthTokens.Basic(user, password));
 await driver.VerifyConnectivityAsync();
 Console.WriteLine("Connection established.");
-
-#!pwsh
-
-# Copy the cypher file into the Docker container
-docker cp "C:\dev_mike\sk-graph-rag\cypher\movies-graphrag-book-download.cypher" neo4j:/import
 
 #!csharp
 
