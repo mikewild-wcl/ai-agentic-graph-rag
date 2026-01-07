@@ -1,4 +1,5 @@
 using Agentic.GraphRag.AppHost.Extensions;
+using Agentic.GraphRag.AppHost.ParameterDefaults;
 using Agentic.GraphRag.Shared;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var graphDBProvider = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.Provider}");
 var graphDBConnection = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.Connection}");
 var createGraphDBInDocker = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.CreateInDocker}");
+var graphDBDockerContainerName = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.DockerContainerName}", value: new EmptyStringParameterDefault());
 var graphDBUser = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.User}");
 var graphDBPassword = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.Password}", secret: true);
 var einsteinVectorDb = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.EinsteinVectorDb}");
@@ -28,23 +30,32 @@ var addDockerContainers =
 
 if (addDockerContainers && graphDBProvider.GetValue() == "neo4j")
 {
-    builder.AddDockerfile(
-        "neo4j", "./", "Dockerfile")
+    var neo4jContainer = builder.AddDockerfile(
+        "neo4j", "./", "Dockerfile")      
         .WithEndpoint(7474, scheme: "http", targetPort: 7474)
         .WithEndpoint(7687, scheme: "bolt", targetPort: 7687)
         .WithEnvironment("NEO4J_AUTH", $"{graphDBUser.GetValue()}/{graphDBPassword.GetValue()}")
         .WithLifetime(ContainerLifetime.Persistent);
+
+    var containerName = graphDBDockerContainerName.GetValue();
+    if (!string.IsNullOrEmpty(containerName))
+    {
+        neo4jContainer.WithContainerName(containerName);
+    }
 }
 else if (addDockerContainers && graphDBProvider.GetValue() == "memgraph")
 {
     // Compose memgraph 
 }
 
-//var (aiChatModel, aiEmbeddingModel) = builder.AddAIModels("ai-service");
-var aiService = builder.AddAIModels("ai-service");
+var (chatModel, embeddingModel) = builder.AddAIModels("ai-service");
+//var aiService = builder.AddAIModels("ai-service");
 
 builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
-    .WithAIModels(aiService, "chat", "embedding")
+    //.WithAIModels(aiService, "chat", "embedding")
+    .WithAISettingsEnvironment()
+    .WithReference(chatModel)
+    .WithReference(embeddingModel)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Provider}", graphDBProvider)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Connection}", graphDBConnection)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.User}", graphDBUser)

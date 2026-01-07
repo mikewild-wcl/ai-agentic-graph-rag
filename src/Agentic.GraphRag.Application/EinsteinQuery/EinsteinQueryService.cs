@@ -1,15 +1,12 @@
 using Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
-using Agentic.GraphRag.Application.Settings;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Web;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery;
 
 public sealed class EinsteinQueryService(
-    //[FromKeyedServices(ServiceKeys.AzureOpenAIChatClient)] 
     IChatClient chatClient,
     IEinsteinQueryDataAccess dataAccess,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,

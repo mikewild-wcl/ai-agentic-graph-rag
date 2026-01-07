@@ -1,23 +1,12 @@
-﻿using Agentic.GraphRag.Application.Settings;
-using Agentic.GraphRag.Shared.Configuration;
-using Azure.AI.OpenAI;
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using System.ClientModel;
+﻿using Agentic.GraphRag.Shared.Configuration;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Agentic.GraphRag.Extensions;
 
 internal static class AIServiceExtensions
 {
-    /// <summary>
-    /// Configures AI services based on appsettings.json configuration.
-    /// </summary>
     internal static IHostApplicationBuilder AddAIServices(this IHostApplicationBuilder builder)
     {
-        //var aiSettings = AIConfiguration.GetSettings(builder.Configuration);
         var aiSettings = builder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
 
         if (aiSettings is null)
@@ -29,63 +18,9 @@ internal static class AIServiceExtensions
 
         builder.AddAIProvider(aiSettings);
 
-        builder.Services.AddAIAgentServices();
-
         builder.Services.AddHostedService<AIStartupLogger>();
 
         return builder;
-    }
-
-    internal static IServiceCollection AddAIAgentServices(this IServiceCollection services)
-    {
-        //services.AddSingleton(sp =>
-        //{
-        //    var config = sp.GetRequiredService<IOptions<AzureOpenAISettings>>().Value;
-        //    return new AzureOpenAIClient(
-        //        new Uri(config.Endpoint),
-        //        new ApiKeyCredential(config.ApiKey));
-        //});
-
-        //services.AddSingleton(
-        //    new ChatClientAgentOptions
-        //    {
-        //        Name = "Joker",
-        //        ChatOptions = new() { Instructions = "You are good at telling jokes." }
-        //    });
-
-        //services.AddKeyedChatClient(ServiceKeys.AzureOpenAIChatClient, sp =>
-        //{
-        //    var config = sp.GetRequiredService<IOptions<AzureOpenAISettings>>().Value;
-        //    var client = sp.GetRequiredService<AzureOpenAIClient>();
-
-        //    return client
-        //        .GetChatClient(config.DeploymentName)
-        //        .AsIChatClient();
-        //});
-
-        services.AddKeyedChatClient(ServiceKeys.DefaultAIChatClient, sp =>
-        {
-            var config = sp.GetRequiredService<IOptions<AISettings>>().Value;
-            var client = sp.GetRequiredService<AzureOpenAIClient>();
-
-            return client
-                .GetChatClient(config.DeploymentName)
-                .AsIChatClient();
-        });
-
-        services.AddScoped(sp =>
-        {
-            var config = sp.GetRequiredService<IOptions<AISettings>>().Value;
-            var client = sp.GetRequiredService<AzureOpenAIClient>();
-
-            return client.GetEmbeddingClient(config.EmbeddingDeploymentName).AsIEmbeddingGenerator();
-        });
-
-        //services.AddSingleton<AIAgent>(sp => new ChatClientAgent(
-        //   chatClient: sp.GetRequiredKeyedService<IChatClient>("AzureOpenAI"),
-        //   options: sp.GetRequiredService<ChatClientAgentOptions>()));
-
-        return services;
     }
 
     private static IHostApplicationBuilder AddAIProvider(
@@ -95,9 +30,6 @@ internal static class AIServiceExtensions
         switch (aiSettings.Provider)
         {
             case AIProvider.Ollama:
-                //var ollamaClient = builder.AddOllamaApiClient(aiSettings.DeploymentName);
-                //ollamaClient.AddChatClient();
-                //ollamaClient.AddEmbeddingGenerator();
                 builder.AddOllamaApiClient(aiSettings.DeploymentName)
                     .AddChatClient();
                 builder.AddOllamaApiClient(aiSettings.EmbeddingDeploymentName)
@@ -112,15 +44,15 @@ internal static class AIServiceExtensions
 
             case AIProvider.GitHubModels:
                 var gitHubClient = builder.AddOpenAIClient(aiSettings.DeploymentName);
-                gitHubClient.AddChatClient();
-                gitHubClient.AddEmbeddingGenerator();
+                gitHubClient.AddChatClient(aiSettings.DeploymentName);
+                gitHubClient.AddEmbeddingGenerator(aiSettings.EmbeddingDeploymentName);
                 break;
 
             case AIProvider.AzureAIFoundry:
             case AIProvider.AzureLocalFoundry:
                 var foundryClient = builder.AddAzureChatCompletionsClient(aiSettings.DeploymentName);
                 foundryClient.AddChatClient();
-                //foundryClient.AddEmbeddingGenerator();
+                //foundryClient.AddEmbeddingGenerator(); //Not available yet
                 break;
 
             default:

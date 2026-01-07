@@ -13,6 +13,12 @@ public record class AISettings(
 {
     public const string SectionName = "AI";
 
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+    //Added as a workaround for failures when binding configuration to record types
+    //https://stackoverflow.com/questions/64933022/can-i-use-c-sharp-9-records-as-ioptions
+    public AISettings() : this(default, default, default) { }
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
     public string? EmbeddingDeploymentName { get; init; }
 
     public string? EmbeddingModel { get; init; }

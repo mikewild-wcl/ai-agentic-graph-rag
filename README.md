@@ -62,7 +62,7 @@ docker volume create neo4j_data `
   && docker volume create neo4j_import `
   && docker volume create neo4j_plugins
 
-docker run -d --name neo4j `
+docker run -d --name neo4j-agentic-graphrag `
   -p 7474:7474 -p 7687:7687 `
   -v neo4j_data:/data `
   -v neo4j_logs:/logs `
@@ -75,7 +75,7 @@ docker run -d --name neo4j `
   neo4j:2025.09.0
 ```
 
-The Neo4j browser can be accessed at http://localhost:7474/browser/
+The Neo4j browser can be accessed at http://localhost:7474/browser/. Use the username `neo4j' and default password 'password'.
 
 Delete data by running this in the Neo4j data browser:
 ```
@@ -83,10 +83,15 @@ MATCH (n) DETACH DELETE n;
 CALL apoc.schema.assert({},{},true) YIELD label, key RETURN *
 ```
 
-Some of the code in this project was inspired by the book Essential GraphRAG. The code for that book
-is at https://github.com/tomasonjo/kg-rag.
+Some of the code in this project was inspired by the book Essential GraphRAG. The code can be found at https://github.com/tomasonjo/kg-rag. 
+Datasets for the author's earlier book on graphs can be found in https://github.com/tomasonjo/graphs-network-science.
 
-Datasets for the earlier book can be found in https://github.com/tomasonjo/graphs-network-science/tree/main.
+#### Setting up Movies data
+
+Movies data can be added by opening the `ai-agentic-graph-rag\notebooks` folder in vs code and running notebook `Neo4j load movies.dib`.
+
+Note that the first step in the notebook copies files into the docker container; if the copy fails check that the container is running and the name of the container in the `cp` command is correct.
+The container name can be set in the appSettings parameters - for development this is `"GraphDatabase-CreateInDockerContainerName": "neo4j-agentic-graphrag"`; if no value is set the AppHost will create a default name.
 
 ### Cypher
 

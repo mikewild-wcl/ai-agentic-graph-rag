@@ -18,6 +18,7 @@ public static class ResourceNames
 
     public const string GraphDatabaseSection = "GraphDatabase";
     public const string CreateInDocker = "CreateInDocker";
+    public const string DockerContainerName = "DockerContainerName";
     public const string Provider = "Provider";
     public const string Connection = "Connection";
     public const string User = "User";

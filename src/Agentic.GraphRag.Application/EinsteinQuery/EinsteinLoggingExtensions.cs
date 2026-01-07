@@ -5,11 +5,11 @@ namespace Agentic.GraphRag.Application.EinsteinQuery;
 // See https://learn.microsoft.com/en-us/dotnet/core/extensions/high-performance-logging
 internal static class EinsteinLoggingExtensions
 {
-    public static void ChunksAndEmbeddingsSaved(this ILogger logger, int chunkCount, int mbeddingCount) =>
-        _logChunksAndEmbeddingsSaved(logger, chunkCount, mbeddingCount, default!);
+    public static void ChunksAndEmbeddingsSaved(this ILogger logger, int chunkCount, int embeddingCount) =>
+        _logChunksAndEmbeddingsSaved(logger, chunkCount, embeddingCount, default!);
 
-    public static void ParentChildChunksAndEmbeddingsSaved(this ILogger logger, string pdfId, int parentChunkId, int chunkCount, int mbeddingCount) =>
-        _logParentChildChunksAndEmbeddingsSaved(logger, pdfId, parentChunkId, chunkCount, mbeddingCount, default!);
+    public static void ParentChildChunksAndEmbeddingsSaved(this ILogger logger, string pdfId, int parentChunkId, int chunkCount, int embeddingCount) =>
+        _logParentChildChunksAndEmbeddingsSaved(logger, pdfId, parentChunkId, chunkCount, embeddingCount, default!);
 
     public static void FullTextIndexCreated(this ILogger logger, string indexName) =>
         _logFullTextIndexCreated(logger, indexName, default!);
