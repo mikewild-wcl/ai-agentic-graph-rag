@@ -1,8 +1,16 @@
 using Agentic.GraphRag.AppHost.Extensions;
 using Agentic.GraphRag.AppHost.ParameterDefaults;
 using Agentic.GraphRag.Shared;
+using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
+
+// Explicitly set environment-specific configuration loading
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddUserSecrets<Program>(optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 var graphDBProvider = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.Provider}");
 var graphDBConnection = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.Connection}");
@@ -52,10 +60,11 @@ var (chatModel, embeddingModel) = builder.AddAIModels("ai-service");
 //var aiService = builder.AddAIModels("ai-service");
 
 builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
-    //.WithAIModels(aiService, "chat", "embedding")
-    .WithAISettingsEnvironment()
-    .WithReference(chatModel)
-    .WithReference(embeddingModel)
+    .WithAIModels(chatModel, embeddingModel)
+    //.WithAISettingsEnvironment()
+    //.WithReference(chatModel)
+    //.WithReference(embeddingModel)
+    .WithHttpsEndpoint() //Force https if a non-standard launch profile is selected
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Provider}", graphDBProvider)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Connection}", graphDBConnection)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.User}", graphDBUser)

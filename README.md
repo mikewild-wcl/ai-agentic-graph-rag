@@ -12,6 +12,8 @@ The same pattern is used when passing the resources , with : used as the seperat
 AI is configured to use one of several providers. This is based on https://chris-ayers.com/2025/07/06/aspire-with-lots-of-ai/ 
 and the corresponding git repository https://github.com/codebytes/build-with-aspire.
 
+See also [AI integrations compatibility matrix](https://aspire.dev/integrations/cloud/azure/ai-compatibility-matrix/). 
+
 To set this up:
 
 - Add model integration nuget packages to the AppHost project.
@@ -38,7 +40,8 @@ To set this up:
     var (aiModel, aiEmbeddingModel) = builder.AddAIEmbeddingModel(); 
   ```
  
-- For Github Models, make sure to add your GitHub API key either as a parameter in user secrtets `{name}-gh-apikey` where `name` is the name of the deployment in your configuration, 
+- For Github Models, make sure to add your GitHub API key either as a parameter in user secrtets `{name}-gh-apikey` where `name` is 
+  the name of the deployment(s) in your configuration (e.g. chat-gh-apikey embedding-gh-apikey), 
   or in the GITHUB_TOKEN environment variable.
 
 - On the client side, add the following nuget packages:

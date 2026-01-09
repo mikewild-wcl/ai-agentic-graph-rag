@@ -44,8 +44,9 @@ internal static class AIServiceExtensions
 
             case AIProvider.GitHubModels:
                 var gitHubClient = builder.AddOpenAIClient(aiSettings.DeploymentName);
-                gitHubClient.AddChatClient(aiSettings.DeploymentName);
-                gitHubClient.AddEmbeddingGenerator(aiSettings.EmbeddingDeploymentName);
+                gitHubClient.AddChatClient();
+                var gitHubEmbeddingClient = builder.AddOpenAIClient(aiSettings.EmbeddingDeploymentName);
+                gitHubEmbeddingClient.AddEmbeddingGenerator();
                 break;
 
             case AIProvider.AzureAIFoundry:
