@@ -1,4 +1,5 @@
 using Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
+using Agentic.GraphRag.Shared.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -10,10 +11,12 @@ public sealed class EinsteinQueryService(
     IChatClient chatClient,
     IEinsteinQueryDataAccess dataAccess,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+    AISettings aiSettings,
     ILogger<EinsteinQueryService> logger) : IEinsteinQueryService
 {
     private readonly IChatClient _chatClient = chatClient;
     private readonly IEinsteinQueryDataAccess _dataAccess = dataAccess;
+    private readonly AISettings _aiSettings = aiSettings;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
     //private readonly ILogger<EinsteinQueryService> _logger = logger;
 
@@ -38,27 +41,52 @@ public sealed class EinsteinQueryService(
             };
         }
 
-        var userInput = question.Trim();
+        CancellationToken aiCancellationToken;
+        CancellationTokenSource? aiCancellationSource = null;
+        CancellationTokenSource timeoutTokenSource = new(TimeSpan.FromSeconds(_aiSettings.Timeout ?? Defaults.DefaultTimeoutSeconds));
 
-        var stepBackPrompt = await GenerateStepBackPrompt(userInput, cancellationToken).ConfigureAwait(false);
-
-        var embedding = await _embeddingGenerator.GenerateVectorAsync(userInput, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var searchResults = await _dataAccess.QuerySimilarRecords(embedding).ConfigureAwait(false);
-
-        var stepBackEmbedding = await _embeddingGenerator.GenerateVectorAsync(stepBackPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
-        var stepBackSearchResults = await _dataAccess.QuerySimilarRecords(stepBackEmbedding).ConfigureAwait(false);
-
-        var standardResponse = await GenerateQuestionResponse(userInput, [.. searchResults.Select(r => r.Text)], cancellationToken).ConfigureAwait(false);
-        var stepBackResponse = await GenerateQuestionResponse(stepBackPrompt, [.. stepBackSearchResults.Select(r => r.Text)], cancellationToken).ConfigureAwait(false);
-
-        return new EinsteinQueryResult
+        if (cancellationToken.CanBeCanceled) // External cancellation token provided, so wrap it
         {
-            StandardResponse = standardResponse,
-            RewrittenQuery = stepBackPrompt,
-            StepBackResponse = stepBackResponse,
-            StandardSearchResults = [.. searchResults],
-            StepBackSearchResults = [.. stepBackSearchResults]
-        };
+            aiCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
+            aiCancellationToken = aiCancellationSource.Token;
+        }
+        else
+        {
+            aiCancellationToken = timeoutTokenSource.Token;
+        }
+
+        try
+        {
+            //using var timeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(_aiSettings.Timeout ?? Defaults.DefaultTimeoutSeconds));
+            //using var aiCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken.Token, cancellationToken);
+
+            var userInput = question.Trim();
+
+            var stepBackPrompt = await GenerateStepBackPrompt(userInput, aiCancellationToken).ConfigureAwait(false);
+
+            var embedding = await _embeddingGenerator.GenerateVectorAsync(userInput, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var searchResults = await _dataAccess.QueryParentsAndChildren(embedding).ConfigureAwait(false);
+
+            var stepBackEmbedding = await _embeddingGenerator.GenerateVectorAsync(stepBackPrompt, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var stepBackSearchResults = await _dataAccess.QuerySimilarRecords(stepBackEmbedding).ConfigureAwait(false);
+
+            var standardResponse = await GenerateQuestionResponse(userInput, [.. searchResults.Select(r => r.Text)], aiCancellationToken).ConfigureAwait(false);
+            var stepBackResponse = await GenerateQuestionResponse(stepBackPrompt, [.. stepBackSearchResults.Select(r => r.Text)], aiCancellationToken).ConfigureAwait(false);
+
+            return new EinsteinQueryResult
+            {
+                StandardResponse = standardResponse,
+                RewrittenQuery = stepBackPrompt,
+                StepBackResponse = stepBackResponse,
+                StandardSearchResults = [.. searchResults],
+                StepBackSearchResults = [.. stepBackSearchResults]
+            };
+        }
+        finally
+        {
+            aiCancellationSource?.Dispose();
+            timeoutTokenSource?.Dispose();
+        }
     }
 
     private async Task<string> GenerateQuestionResponse(string userInput, List<string> searchResults, CancellationToken cancellationToken)
@@ -94,7 +122,8 @@ public sealed class EinsteinQueryService(
                 """
                 You are an expert at world knowledge. Your task is to step back
                 and paraphrase a question to a more generic step-back question, which
-                is easier to answer. Here are a few examples:
+                is easier to answer. ONLY output the step-back question without any surrounding text or description.
+                Here are a few examples:
 
                 "input": "Could the members of The Police perform lawful arrests?"
                 "output": "What can the members of The Police do?"
