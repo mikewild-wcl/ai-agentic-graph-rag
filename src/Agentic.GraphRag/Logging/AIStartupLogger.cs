@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Agentic.GraphRag.Logging;
 
+[SuppressMessage("Performance", "CA1812", Justification = "This is called by AI extensions code")]
 internal sealed class AIStartupLogger(
     ILogger<AIStartupLogger> logger,
     AISettings settings,

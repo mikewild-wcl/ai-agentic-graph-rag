@@ -31,6 +31,7 @@ public record class AISettings(
         Provider = {{Provider}}, 
         Deployment = {{DeploymentName}}, 
         Model = {{Model}}, 
+        Embedding Deployment = {{EmbeddingDeploymentName}},
         Embedding Model = {{EmbeddingModel}}
         """;
 }

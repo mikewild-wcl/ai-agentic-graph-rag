@@ -22,12 +22,6 @@ var einsteinVectorDb = builder.AddParameter($"{ResourceNames.GraphDatabaseSectio
 var moviesDb = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.MoviesDb}");
 var ufoDb = builder.AddParameter($"{ResourceNames.GraphDatabaseSection}-{ResourceNames.UfoDb}");
 
-var azureOpenAIEndpoint = builder.AddParameter($"{ResourceNames.AzureOpenAISection}-{ResourceNames.Endpoint}");
-var azureOpenAIApiKey = builder.AddParameter($"{ResourceNames.AzureOpenAISection}-{ResourceNames.ApiKey}", secret: true);
-var azureOpenAIDeploymentName = builder.AddParameter($"{ResourceNames.AzureOpenAISection}-{ResourceNames.DeploymentName}");
-var azureOpenAIEmbeddingDeploymentName = builder.AddParameter($"{ResourceNames.AzureOpenAISection}-{ResourceNames.EmbeddingDeploymentName}");
-var azureOpenAITimeout = builder.AddParameter($"{ResourceNames.AzureOpenAISection}-{ResourceNames.Timeout}");
-
 var downloadDirectory = builder.AddParameter($"{ResourceNames.DownloadSection}-{ResourceNames.DownloadDirectory}");
 var einsteinDocumentFileName = builder.AddParameter($"{ResourceNames.EinsteinQuerySection}-{ResourceNames.DocumentFileName}");
 var einsteinDocumentUri = builder.AddParameter($"{ResourceNames.EinsteinQuerySection}-{ResourceNames.DocumentUri}");
@@ -69,11 +63,6 @@ builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.EinsteinVectorDb}", einsteinVectorDb)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.MoviesDb}", moviesDb)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.UfoDb}", ufoDb)
-    //.WithEnvironment($"{ResourceNames.AzureOpenAISection}:{ResourceNames.Endpoint}", azureOpenAIEndpoint)
-    //.WithEnvironment($"{ResourceNames.AzureOpenAISection}:{ResourceNames.ApiKey}", azureOpenAIApiKey)
-    //.WithEnvironment($"{ResourceNames.AzureOpenAISection}:{ResourceNames.DeploymentName}", azureOpenAIDeploymentName)
-    //.WithEnvironment($"{ResourceNames.AzureOpenAISection}:{ResourceNames.EmbeddingDeploymentName}", azureOpenAIEmbeddingDeploymentName)
-    //.WithEnvironment($"{ResourceNames.AzureOpenAISection}:{ResourceNames.Timeout}", azureOpenAITimeout)
     .WithEnvironment($"{ResourceNames.DownloadSection}:{ResourceNames.DownloadDirectory}", downloadDirectory)
     .WithEnvironment($"{ResourceNames.EinsteinQuerySection}:{ResourceNames.DocumentFileName}", einsteinDocumentFileName)
     .WithEnvironment($"{ResourceNames.EinsteinQuerySection}:{ResourceNames.DocumentUri}", einsteinDocumentUri)

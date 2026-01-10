@@ -15,7 +15,6 @@ internal static class HostApplicationBuilderExtensions
         {
             builder.Services
                .Configure<AISettings>(builder.Configuration.GetSection(AISettings.SectionName))
-               .Configure<AzureOpenAISettings>(builder.Configuration.GetSection(AzureOpenAISettings.SectionName))
                .Configure<DownloadSettings>(builder.Configuration.GetSection(DownloadSettings.SectionName))
                .Configure<EinsteinQuerySettings>(builder.Configuration.GetSection(EinsteinQuerySettings.SectionName))
                .Configure<GraphDatabaseSettings>(builder.Configuration.GetSection(GraphDatabaseSettings.SectionName));
