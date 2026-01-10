@@ -61,9 +61,6 @@ var (chatModel, embeddingModel) = builder.AddAIModels("ai-service");
 
 builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
     .WithAIModels(chatModel, embeddingModel)
-    //.WithAISettingsEnvironment()
-    //.WithReference(chatModel)
-    //.WithReference(embeddingModel)
     .WithHttpsEndpoint() //Force https if a non-standard launch profile is selected
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Provider}", graphDBProvider)
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Connection}", graphDBConnection)

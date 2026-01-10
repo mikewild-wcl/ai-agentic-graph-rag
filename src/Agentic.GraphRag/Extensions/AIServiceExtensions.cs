@@ -1,97 +1,74 @@
-﻿using Agentic.GraphRag.Shared.Configuration;
+﻿using Agentic.GraphRag.Logging;
+using Agentic.GraphRag.Shared.Configuration;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Agentic.GraphRag.Extensions;
 
+[SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "False positive in extensions class")]
 internal static class AIServiceExtensions
 {
-    internal static IHostApplicationBuilder AddAIServices(this IHostApplicationBuilder builder)
+    extension(IHostApplicationBuilder builder)
     {
-        var aiSettings = builder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>();
-
-        if (aiSettings is null)
+        internal IHostApplicationBuilder AddAIServices()
         {
-            throw new InvalidOperationException("AI settings are not configured properly.");
+            var aiSettings = builder.Configuration.GetSection(AISettings.SectionName).Get<AISettings>() 
+                ?? throw new InvalidOperationException("AI settings are not configured properly.");
+
+            builder.Services.AddSingleton(aiSettings);
+
+            builder.AddAIProvider(aiSettings);
+
+            builder.Services.AddHostedService<AIStartupLogger>();
+
+            return builder;
         }
 
-        builder.Services.AddSingleton(aiSettings);
+        private IHostApplicationBuilder AddAIProvider(AISettings aiSettings)
+        {
+            switch (aiSettings.Provider)
+            {
+                case AIProvider.Ollama:
+                    builder.AddOllamaApiClient(aiSettings.DeploymentName)
+                        .AddChatClient();
+                    if (!string.IsNullOrEmpty(aiSettings.EmbeddingDeploymentName))
+                    {
+                        builder.AddOllamaApiClient(aiSettings.EmbeddingDeploymentName)
+                            .AddEmbeddingGenerator();
+                    }
+                    break;
 
-        builder.AddAIProvider(aiSettings);
+                case AIProvider.AzureOpenAI:
+                    var azureClient = builder.AddAzureOpenAIClient("ai-service");
+                    azureClient.AddChatClient();
+                    if (!string.IsNullOrEmpty(aiSettings.EmbeddingDeploymentName))
+                    {
+                        azureClient.AddEmbeddingGenerator();
+                    }
+                    break;
 
-        builder.Services.AddHostedService<AIStartupLogger>();
+                case AIProvider.GitHubModels:
+                    var gitHubClient = builder.AddOpenAIClient(aiSettings.DeploymentName);
+                    gitHubClient.AddChatClient();
+                    if (!string.IsNullOrEmpty(aiSettings.EmbeddingDeploymentName))
+                    {
+                        var gitHubEmbeddingClient = builder.AddOpenAIClient(aiSettings.EmbeddingDeploymentName);
+                        gitHubEmbeddingClient.AddEmbeddingGenerator();
+                    }
+                    break;
 
-        return builder;
+                case AIProvider.AzureAIFoundry:
+                case AIProvider.AzureLocalFoundry:
+                    var foundryClient = builder.AddAzureChatCompletionsClient(aiSettings.DeploymentName);
+                    foundryClient.AddChatClient();
+                    //foundryClient.AddEmbeddingGenerator(); //Not available yet
+                    break;
+
+                default:
+                    throw new InvalidOperationException(
+                        $"Unsupported AI provider: {aiSettings.Provider}");
+            }
+
+            return builder;
+        }
     }
-
-    private static IHostApplicationBuilder AddAIProvider(
-        this IHostApplicationBuilder builder,
-        AISettings aiSettings)
-    {
-        switch (aiSettings.Provider)
-        {
-            case AIProvider.Ollama:
-                builder.AddOllamaApiClient(aiSettings.DeploymentName)
-                    .AddChatClient();
-                builder.AddOllamaApiClient(aiSettings.EmbeddingDeploymentName)
-                    .AddEmbeddingGenerator();
-                break;
-
-            case AIProvider.AzureOpenAI:
-                var azureClient = builder.AddAzureOpenAIClient("ai-service");
-                azureClient.AddChatClient();
-                azureClient.AddEmbeddingGenerator();
-                break;
-
-            case AIProvider.GitHubModels:
-                var gitHubClient = builder.AddOpenAIClient(aiSettings.DeploymentName);
-                gitHubClient.AddChatClient();
-                var gitHubEmbeddingClient = builder.AddOpenAIClient(aiSettings.EmbeddingDeploymentName);
-                gitHubEmbeddingClient.AddEmbeddingGenerator();
-                break;
-
-            case AIProvider.AzureAIFoundry:
-            case AIProvider.AzureLocalFoundry:
-                var foundryClient = builder.AddAzureChatCompletionsClient(aiSettings.DeploymentName);
-                foundryClient.AddChatClient();
-                //foundryClient.AddEmbeddingGenerator(); //Not available yet
-                break;
-
-            default:
-                throw new InvalidOperationException(
-                    $"Unsupported AI provider: {aiSettings.Provider}");
-        }
-
-        return builder;
-    }
-}
-
-/// <summary>
-/// Logs AI configuration at startup.
-/// </summary>
-internal sealed class AIStartupLogger(
-    ILogger<AIStartupLogger> logger,
-    AISettings settings,
-    IConfiguration configuration) : IHostedService
-{
-    [SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "This method is only called at startup")]
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        if (settings.Provider == AIProvider.AzureOpenAI)
-        {
-            var hasConnection = !string.IsNullOrEmpty(configuration.GetConnectionString("ai-service"));
-            logger.LogInformation(
-                "AI: {Provider}, Deployment: {Deployment}, Model: {Model}, Connected: {HasConnection}",
-                settings.Provider, settings.DeploymentName, settings.Model, hasConnection);
-        }
-        else
-        {
-            logger.LogInformation(
-                "AI: {Provider}, Deployment: {Deployment}, Model: {Model}",
-                settings.Provider, settings.DeploymentName, settings.Model);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
