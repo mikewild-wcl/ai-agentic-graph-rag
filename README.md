@@ -78,7 +78,7 @@ docker run -d --name neo4j-agentic-graphrag `
   neo4j:2025.09.0
 ```
 
-The Neo4j browser can be accessed at http://localhost:7474/browser/. Use the username `neo4j' and default password 'password'.
+The Neo4j browser can be accessed at http://localhost:7474/browser/. Use the username `neo4j` and default password `password`.
 
 Delete data by running this in the Neo4j data browser:
 ```
