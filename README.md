@@ -94,7 +94,7 @@ Datasets for the author's earlier book on graphs can be found in https://github.
 Movies data can be added by opening the `ai-agentic-graph-rag\notebooks` folder in vs code and running notebook `Neo4j load movies.dib`.
 
 Note that the first step in the notebook copies files into the docker container; if the copy fails check that the container is running and the name of the container in the `cp` command is correct.
-The container name can be set in the appSettings parameters - for development this is `"GraphDatabase-CreateInDockerContainerName": "neo4j-agentic-graphrag"`; if no value is set the AppHost will create a default name.
+The container name can be set in the appSettings parameters - for development this is `"GraphDatabase-DockerContainerName": "neo4j-agentic-graphrag"`; if no value is set the AppHost will create a default name.
 
 ### Cypher
 
