@@ -24,6 +24,42 @@
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19241",
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20223"
       }
+    },
+    "Ollama": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17032;http://localhost:15162",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Ollama",
+        "DOTNET_ENVIRONMENT": "Ollama",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21181",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22252"
+      }
+    },
+    "AzureOpenAI": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17032;http://localhost:15162",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "AzureOpenAI",
+        "DOTNET_ENVIRONMENT": "AzureOpenAI",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21181",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22252"
+      }
+    },
+    "GitHubModels": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17032;http://localhost:15162",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "GitHubModels",
+        "DOTNET_ENVIRONMENT": "GitHubModels",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21181",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22252"
+      }
     }
   }
 }

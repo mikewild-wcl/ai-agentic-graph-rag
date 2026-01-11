@@ -52,9 +52,15 @@
                         <ul>
                             @foreach (var result in item.Answer.StepBackSearchResults)
                             {
+                                var scoreClass = result.Score switch
+                                {
+                                    > 0.9 => "score-high",
+                                    > 0.5 => "score-medium",
+                                    _ => "score-low"
+                                };
                                 <li>
                                     @result.Text
-                                    <span class="@(result.Score > 0.9 ? "score-high" : result.Score > 0.5 ? "score-medium" : "score-low")">
+                                    <span class="@scoreClass">
                                         (Score: @result.Score:F2)
                                     </span>
                                 </li>

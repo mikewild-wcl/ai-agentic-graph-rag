@@ -3,7 +3,14 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Aspire.Azure.AI.Inference" Version="13.1.0-preview.1.25616.3" />
+    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.1.0-preview.1.25616.3" />
+    <PackageVersion Include="Aspire.Hosting.Azure.AIFoundry" Version="13.1.0-preview.1.25616.3" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.GitHub.Models" Version="13.1.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
+    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Ollama" Version="13.0.1-beta.468" />
+    <PackageVersion Include="CommunityToolkit.Aspire.OllamaSharp" Version="13.0.0" />
     <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251219.1" />
     <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251219.1" />
     <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.0.0-preview.251219.1" />

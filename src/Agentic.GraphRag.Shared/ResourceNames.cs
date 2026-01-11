@@ -2,13 +2,6 @@
 
 public static class ResourceNames
 {
-    public const string AzureOpenAISection = "AzureOpenAI";
-    public const string Endpoint = "Endpoint";
-    public const string ApiKey = "ApiKey";
-    public const string DeploymentName = "DeploymentName";
-    public const string EmbeddingDeploymentName = "EmbeddingDeploymentName";
-    public const string Timeout = "Timeout";
-
     public const string DownloadSection = "Download";
     public const string DownloadDirectory = "DownloadDirectory";
     
@@ -18,6 +11,7 @@ public static class ResourceNames
 
     public const string GraphDatabaseSection = "GraphDatabase";
     public const string CreateInDocker = "CreateInDocker";
+    public const string DockerContainerName = "DockerContainerName";
     public const string Provider = "Provider";
     public const string Connection = "Connection";
     public const string User = "User";
