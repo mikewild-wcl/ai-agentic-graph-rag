@@ -6,8 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.ConfigureOptions()
-    .DumpConfiguration();
+builder.ConfigureOptions();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.DumpConfiguration();
+}
 
 builder.AddAIServices();
 
