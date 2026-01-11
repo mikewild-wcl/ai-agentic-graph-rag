@@ -232,7 +232,7 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
         ArgumentNullException.ThrowIfNull(pdfId);
         ArgumentNullException.ThrowIfNull(parentChunk);
 
-        if (childChunks is null || embeddings is null || childChunks.Count != embeddings.Count * 2)
+        if (childChunks is null || embeddings is null || childChunks.Count != embeddings.Count)
         {
             throw new ArgumentException("Chunks and embeddings must be non-null and have the correct counts.");
         }

@@ -1,6 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-
   <ItemGroup>
      <PackageReference Include="FluentAssertions" />
      <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -14,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Agentic.GraphRag.Application\Agentic.GraphRag.Application.csproj" />
+    <ProjectReference Include="..\Agentic.GraphRag.Shared\Agentic.GraphRag.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,6 +7,48 @@ Parameters in the Aspire appsettings.json file `Parameters` section
 follow a convention of `SectionName-SettingName` with the hyphen acting as a separator.
 The same pattern is used when passing the resources , with : used as the seperator.
 
+## AI settings
+
+AI is configured to use one of several providers. This is based on https://chris-ayers.com/2025/07/06/aspire-with-lots-of-ai/ 
+and the corresponding git repository https://github.com/codebytes/build-with-aspire.
+
+See also [AI integrations compatibility matrix](https://aspire.dev/integrations/cloud/azure/ai-compatibility-matrix/). 
+
+To set this up:
+
+- Add model integration nuget packages to the AppHost project.
+  - Aspire.Hosting.GitHub.Models
+  - Aspire.Hosting.Azure.AIFoundry
+  - Aspire.Hosting.Azure.CognitiveServices
+  - CommunityToolkit.Aspire.Hosting.Ollama
+
+- Add appSettings.<environment>.json files with the relevant settings for each provider. appsettings.Development.json can be used as the default.
+  - appsettings.AzureOpenAI.json
+  - appsettings.Development.json
+  - appsettings.GitHubModels.json
+  - appsettings.Ollama.json
+
+- Change Properties\launchSettings.json to include profiles for each AI provider. Those profiles can be copied from the existing https profile,
+  and the ASPNETCORE_ENVIRONMENT and DOTNET_ENVIRONMENT variables changed to match the <environment> on the appSettings files. 
+  This will allow the project to be run in Visual Studio using different AI providers by selecting the relevant profile.
+
+- Add an extension class AIModelExtensions to the AppHost project. This will load the relevant AI model based on the configured provider.
+- Modify Program.cs in the AppHost project to use the AIModelExtensions class to add the AI model to the service collection.
+- ```
+    var aiService = builder.AddAIModel();
+    var aiService = builder.AddAIEmbeddingModel();
+    var (aiModel, aiEmbeddingModel) = builder.AddAIEmbeddingModel(); 
+  ```
+ 
+- For Github Models, make sure to add your GitHub API key either as a parameter in user secrets `{name}-gh-apikey` where `name` is 
+  the name of the deployment(s) in your configuration (e.g. chat-gh-apikey embedding-gh-apikey), 
+  or in the GITHUB_TOKEN environment variable.
+
+- On the client side, add the following nuget packages:
+    - Aspire.Azure.AI.OpenAI
+    - Aspire.Azure.AI.Inference
+    - CommunityToolkit.Aspire.Client.Ollama
+ 
 ## Graph database - Neo4j
 
 How to get started with Neo4j see [Build applications with Neo4j and .NET](https://neo4j.com/docs/dotnet-manual/current/). 
@@ -23,7 +65,7 @@ docker volume create neo4j_data `
   && docker volume create neo4j_import `
   && docker volume create neo4j_plugins
 
-docker run -d --name neo4j `
+docker run -d --name neo4j-agentic-graphrag `
   -p 7474:7474 -p 7687:7687 `
   -v neo4j_data:/data `
   -v neo4j_logs:/logs `
@@ -36,7 +78,7 @@ docker run -d --name neo4j `
   neo4j:2025.09.0
 ```
 
-The Neo4j browser can be accessed at http://localhost:7474/browser/
+The Neo4j browser can be accessed at http://localhost:7474/browser/. Use the username `neo4j` and default password `password`.
 
 Delete data by running this in the Neo4j data browser:
 ```
@@ -44,10 +86,15 @@ MATCH (n) DETACH DELETE n;
 CALL apoc.schema.assert({},{},true) YIELD label, key RETURN *
 ```
 
-Some of the code in this project was inspired by the book Essential GraphRAG. The code for that book
-is at https://github.com/tomasonjo/kg-rag.
+Some of the code in this project was inspired by the book Essential GraphRAG. The code can be found at https://github.com/tomasonjo/kg-rag. 
+Datasets for the author's earlier book on graphs can be found in https://github.com/tomasonjo/graphs-network-science.
 
-Datasets for the earlier book can be found in https://github.com/tomasonjo/graphs-network-science/tree/main.
+#### Setting up Movies data
+
+Movies data can be added by opening the `ai-agentic-graph-rag\notebooks` folder in vs code and running notebook `Neo4j load movies.dib`.
+
+Note that the first step in the notebook copies files into the docker container; if the copy fails check that the container is running and the name of the container in the `cp` command is correct.
+The container name can be set in the appSettings parameters - for development this is `"GraphDatabase-DockerContainerName": "neo4j-agentic-graphrag"`; if no value is set the AppHost will create a default name.
 
 ### Cypher
 
@@ -97,6 +144,7 @@ Inspired by the book Essential GraphRAG. Some code was adapted and translated fr
 - add more unit tests
 - make the chunking IAsyncEnumerable based
     - [link text](https://stackoverflow.com/questions/21136753/read-a-very-large-file-by-chunks-and-not-line-by-line/21137097#21137097)
+- add a service to the project that uses the chunking
 - implement the repository pattern for Neo4j access
     - See 
 - Look at extracting and using UFO dataset
