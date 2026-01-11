@@ -40,7 +40,7 @@ To set this up:
     var (aiModel, aiEmbeddingModel) = builder.AddAIEmbeddingModel(); 
   ```
  
-- For Github Models, make sure to add your GitHub API key either as a parameter in user secrtets `{name}-gh-apikey` where `name` is 
+- For Github Models, make sure to add your GitHub API key either as a parameter in user secrets `{name}-gh-apikey` where `name` is 
   the name of the deployment(s) in your configuration (e.g. chat-gh-apikey embedding-gh-apikey), 
   or in the GITHUB_TOKEN environment variable.
 
