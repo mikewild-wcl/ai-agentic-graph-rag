@@ -142,9 +142,7 @@ internal static class AIModelExtensions
         IResourceBuilder<IResourceWithConnectionString>? embeddingModel = null;
         if (settings.HasEmbeddingDeployment)
         {
-            embeddingModel = openai.AddDeployment(settings.EmbeddingDeploymentName!, settings.EmbeddingModel!, modelVersion);
-
-            openai.AddDeployment(settings.EmbeddingDeploymentName!, settings.EmbeddingModel!, modelVersion)
+            embeddingModel = openai.AddDeployment(settings.EmbeddingDeploymentName!, settings.EmbeddingModel!, modelVersion)
                 .WithProperties(p =>
                 {
                     p.SkuName = skuName;
