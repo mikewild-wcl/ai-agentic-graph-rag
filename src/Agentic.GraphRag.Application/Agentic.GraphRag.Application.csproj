@@ -12,6 +12,10 @@
     <PackageReference Include="PdfPig" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Agentic.GraphRag.Shared\Agentic.GraphRag.Shared.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <NoWarn>CS9124;</NoWarn> <!-- Parameter is captured into the state of the enclosing type and its value is also used to initialize a field -->
   </PropertyGroup>

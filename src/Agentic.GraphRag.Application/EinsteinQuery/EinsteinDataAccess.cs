@@ -104,7 +104,7 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
                 "rankedResult",
                 new Dictionary<string, object>
                 {
-                    { "k", 2 }, // k as in in KNN - number of nearest neighbors
+                    { "k", k }, // k as in in KNN - number of nearest neighbors
                     { "question_embedding", queryEmbedding.ToArray() }
                 })
                 .ConfigureAwait(false);
@@ -124,29 +124,30 @@ public class EinsteinDataAccess : Neo4jDataAccess, IEinsteinQueryDataAccess
         return rankedResults;
     }
 
-    public async Task<IList<RankedSearchResult>> QueryParentsAndChildren(ReadOnlyMemory<float> queryEmbedding, int k = 3)
+    public async Task<IList<RankedSearchResult>> QueryParentsAndChildren(ReadOnlyMemory<float> queryEmbedding, int k = 4)
     {
         List<RankedSearchResult> rankedResults = [];
 
         try
         {
             var results = await ExecuteReadDictionaryAsync(
-                $"""
-                CALL db.index.vector.queryNodes({ParentChildVectorIndexName}, $k * 4, $question_embedding)
+                """
+                CALL db.index.vector.queryNodes($index_name, $k * 4, $question_embedding)
                 YIELD node, score
                 MATCH (node)<-[:HAS_CHILD]-(parent)
                 WITH parent, max(score) AS score
-                RETURN parent.text AS text, score
+                RETURN parent{ text: parent.text, score } AS rankedResult
                 ORDER BY score DESC
                 LIMIT toInteger($k)
                 """,
                 "rankedResult",
                 new Dictionary<string, object>
                 {
-                    { "k", 2 }, // k as in in KNN - number of nearest neighbors
+                    {"index_name", ParentChildVectorIndexName },
+                    { "k", k }, // k as in in KNN - number of nearest neighbors
                     { "question_embedding", queryEmbedding.ToArray() }
                 })
-                .ConfigureAwait(false);
+                .ConfigureAwait(false);            
 
             rankedResults.AddRange(results.Select(x =>
                 new RankedSearchResult(

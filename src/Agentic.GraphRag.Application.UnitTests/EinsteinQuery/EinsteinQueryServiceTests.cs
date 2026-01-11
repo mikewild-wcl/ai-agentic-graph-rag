@@ -10,7 +10,7 @@ public class EinsteinQueryServiceTests
     private readonly Mock<IChatClient> _mockChatClient;
     private readonly Mock<IEinsteinQueryDataAccess> _mockDataAccess;
     private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _mockEmbeddingGenerator;
-
+    private readonly Shared.Configuration.AISettings _aISettings;
     private readonly Mock<ILogger<EinsteinQueryService>> _mockLogger;
 
     private readonly EinsteinQueryService _sut;
@@ -22,13 +22,19 @@ public class EinsteinQueryServiceTests
         _mockEmbeddingGenerator = new Mock<IEmbeddingGenerator<string, Embedding<float>>>();
         _mockLogger = new Mock<ILogger<EinsteinQueryService>>();
 
+        _aISettings = new Shared.Configuration.AISettings(
+                Shared.Configuration.AIProvider.AzureOpenAI,
+                "deploymentName",
+                "modelName",
+                Timeout: 60);
+
         _sut = new EinsteinQueryService(
             _mockChatClient.Object,
             _mockDataAccess.Object,
             _mockEmbeddingGenerator.Object,
+            _aISettings,
             _mockLogger.Object);
     }
-
 
     [Fact]
     public void Constructor_Succeeds()

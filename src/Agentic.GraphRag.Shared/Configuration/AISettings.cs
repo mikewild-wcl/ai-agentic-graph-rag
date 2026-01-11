@@ -9,7 +9,7 @@ public record class AISettings(
     AIProvider Provider,
     string DeploymentName,
     string Model,
-    int? Timeout = 120)
+    int? Timeout = Defaults.DefaultTimeoutSeconds)
 {
     public const string SectionName = "AI";
 
