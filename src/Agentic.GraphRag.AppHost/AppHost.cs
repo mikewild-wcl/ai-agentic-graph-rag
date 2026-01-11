@@ -51,7 +51,6 @@ else if (addDockerContainers && graphDBProvider.GetValue() == "memgraph")
 }
 
 var (chatModel, embeddingModel) = builder.AddAIModels("ai-service");
-//var aiService = builder.AddAIModels("ai-service");
 
 builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
     .WithAIModels(chatModel, embeddingModel)

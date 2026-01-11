@@ -34,7 +34,7 @@ internal static class AIModelExtensions
 
             if (settings == null)
             {
-                throw new InvalidOperationException("AI settings mot found. Please add AiSettings to the configuration.");
+                throw new InvalidOperationException("AI settings not found. Please add AiSettings to the configuration.");
             }
 
             var logger = builder.CreateLogger();
