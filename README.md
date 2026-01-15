@@ -48,7 +48,19 @@ To set this up:
     - Aspire.Azure.AI.OpenAI
     - Aspire.Azure.AI.Inference
     - CommunityToolkit.Aspire.Client.Ollama
- 
+
+## Resilience
+
+Timeouts can occur occur with Ollama models because generating responses or loading large models can take 
+longer than the default 10-second resilience timeout in .NET Aspire or the 5-minute default model unloading time in Ollama.
+To address this a new policy extension `AddOllamaResilienceHandler` has been added and applied in 
+`AIServiceExtensions.AddAIProvider` when Ollama is used. 
+
+See this [issue](https://github.com/dotnet/extensions/issues/6331).
+
+For GitHub models, 429 (too many requests) responses can occur when rate limits are exceeded. EinsteinDataIngestionService has been 
+extended to use a resilience pipeline when generating embeddings.
+
 ## Graph database - Neo4j
 
 How to get started with Neo4j see [Build applications with Neo4j and .NET](https://neo4j.com/docs/dotnet-manual/current/). 

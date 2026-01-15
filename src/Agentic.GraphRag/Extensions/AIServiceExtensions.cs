@@ -35,6 +35,10 @@ internal static class AIServiceExtensions
                         builder.AddOllamaApiClient(aiSettings.EmbeddingDeploymentName)
                             .AddEmbeddingGenerator();
                     }
+
+                    /* Add resilience handler for Ollama API calls */
+                    builder.Services.AddOllamaResilienceHandler();
+
                     break;
 
                 case AIProvider.AzureOpenAI:
