@@ -5,6 +5,8 @@ using Agentic.GraphRag.Application.Settings;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualBasic;
+using Polly.Registry;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,6 +18,7 @@ public sealed class EinsteinDataIngestionService(
     IDownloadService downloadService,
     IDocumentChunker documentChunker,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+    ResiliencePipelineProvider<string> resiliencePipelineProvider,
     IOptions<EinsteinQuerySettings> queryOptions,
     ILogger<EinsteinDataIngestionService> logger) : IEinsteinDataIngestionService
 {
@@ -25,6 +28,7 @@ public sealed class EinsteinDataIngestionService(
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
     private readonly EinsteinQuerySettings _querySettings = queryOptions.Value;
     private readonly ILogger<EinsteinDataIngestionService> _logger = logger;
+    private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider = resiliencePipelineProvider;
 
     private const int BatchSize = 10;
 
@@ -103,6 +107,8 @@ public sealed class EinsteinDataIngestionService(
         var batchIndex = 0;
         var batch = new List<(string Chunks, ReadOnlyMemory<float> Embeddings)>(BatchSize);
 
+        var resiliencePipeline = _resiliencePipelineProvider.GetPipeline(ResiliencePipelineNames.RateLimitHitRetry);
+
         await foreach (var chunk in _documentChunker.StreamTextChunks(filePath, cancellationToken).ConfigureAwait(true))
         {
             if (string.IsNullOrWhiteSpace(chunk))
@@ -113,7 +119,16 @@ public sealed class EinsteinDataIngestionService(
 #pragma warning disable CA1848 // Use the LoggerMessage delegates - can remove this when all logging is moved to delegates
             _logger.LogInformation("Chunk: {Chunk}", chunk);
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
-            var embedding = await _embeddingGenerator.GenerateVectorAsync(chunk, cancellationToken: cancellationToken).ConfigureAwait(false);
+            
+            var embedding = await resiliencePipeline.ExecuteAsync(
+                async ct =>
+                {
+                    return await _embeddingGenerator
+                        .GenerateVectorAsync(chunk, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                },
+                cancellationToken).ConfigureAwait(false);
+
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 LogEmbedding(embedding);
