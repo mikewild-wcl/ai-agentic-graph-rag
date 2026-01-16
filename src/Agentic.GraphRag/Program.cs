@@ -15,15 +15,15 @@ if (builder.Environment.IsDevelopment())
 
 builder.AddAIServices();
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services
     .RegisterServices()
     .RegisterBlazorPersistenceServices()
+    .RegisterResiliencePipelines()
     .RegisterHttpClients()
-    .RegisterGraphDatabase();
+    .RegisterGraphDatabase()    ;
 
 builder.Services.AddHsts(options =>
 {
