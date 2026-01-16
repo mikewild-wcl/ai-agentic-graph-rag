@@ -50,7 +50,6 @@ internal static class ServiceCollectionExtensions
 
     internal static IServiceCollection RegisterBlazorPersistenceServices(this IServiceCollection services) =>
         services /* Add services to persist state across navigations (per circuit/session) */
-            .AddScoped<CounterState>()
             .AddScoped<MoviesState>()
             .AddScoped<EinsteinState>();
 
