@@ -1,8 +1,12 @@
 using Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
+using Agentic.GraphRag.Application.Extensions;
+using Agentic.GraphRag.Application.Settings;
 using Agentic.GraphRag.Shared.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Registry;
 using System.Web;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery;
@@ -11,6 +15,7 @@ public sealed class EinsteinQueryService(
     IChatClient chatClient,
     IEinsteinQueryDataAccess dataAccess,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+    ResiliencePipelineProvider<string> resiliencePipelineProvider,
     AISettings aiSettings,
     ILogger<EinsteinQueryService> logger) : IEinsteinQueryService
 {
@@ -18,6 +23,7 @@ public sealed class EinsteinQueryService(
     private readonly IEinsteinQueryDataAccess _dataAccess = dataAccess;
     private readonly AISettings _aiSettings = aiSettings;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
+    private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider = resiliencePipelineProvider;
     //private readonly ILogger<EinsteinQueryService> _logger = logger;
 
     /*
@@ -45,6 +51,8 @@ public sealed class EinsteinQueryService(
         CancellationTokenSource? aiCancellationSource = null;
         CancellationTokenSource timeoutTokenSource = new(TimeSpan.FromSeconds(_aiSettings.Timeout ?? Defaults.DefaultTimeoutSeconds));
 
+        var resiliencePipeline = _resiliencePipelineProvider.GetPipeline(ResiliencePipelineNames.RateLimitHitRetry);
+
         if (cancellationToken.CanBeCanceled) // External cancellation token provided, so wrap it
         {
             aiCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
@@ -64,10 +72,12 @@ public sealed class EinsteinQueryService(
 
             var stepBackPrompt = await GenerateStepBackPrompt(userInput, aiCancellationToken).ConfigureAwait(false);
 
-            var embedding = await _embeddingGenerator.GenerateVectorAsync(userInput, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var embedding = await resiliencePipeline.GetTextEmbedding(userInput, _embeddingGenerator, aiCancellationToken).ConfigureAwait(false);
+
             var searchResults = await _dataAccess.QueryParentsAndChildren(embedding).ConfigureAwait(false);
 
-            var stepBackEmbedding = await _embeddingGenerator.GenerateVectorAsync(stepBackPrompt, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var stepBackEmbedding = await resiliencePipeline.GetTextEmbedding(stepBackPrompt, _embeddingGenerator, aiCancellationToken).ConfigureAwait(false);
+
             var stepBackSearchResults = await _dataAccess.QuerySimilarRecords(stepBackEmbedding).ConfigureAwait(false);
 
             var standardResponse = await GenerateQuestionResponse(userInput, [.. searchResults.Select(r => r.Text)], aiCancellationToken).ConfigureAwait(false);

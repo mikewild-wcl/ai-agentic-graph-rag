@@ -1,8 +1,11 @@
 ﻿using Agentic.GraphRag.Application.Settings;
+using Azure.Core;
+using OllamaSharp.Models.Chat;
 using Polly;
 using Polly.Retry;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Agentic.GraphRag.Extensions;
 
@@ -44,12 +47,14 @@ internal static class ResilienceExtensions
                {
                    ShouldHandle = new PredicateBuilder()
                         .Handle<HttpRequestException>(x =>
-                            x is
-                            {
-                                StatusCode: HttpStatusCode.TooManyRequests
+                            x is { StatusCode: HttpStatusCode.TooManyRequests
                                             or HttpStatusCode.RequestTimeout
                                             or >= (HttpStatusCode)500
-                            }),
+                            })
+                        .Handle<System.ClientModel.ClientResultException>(x =>
+                            x is { Status: (int)HttpStatusCode.TooManyRequests
+                                        or (int)HttpStatusCode.RequestTimeout
+                                        or >= (int)(HttpStatusCode)500}),
                    /* Linear backoff is simpler and sufficient for many cases. We are using a 20 second linear delay here.
                     * For GitHub rate limiting, the Retry-After header is often provided, making linear backoff effective.
                     * Consider switching to Exponential if you observe persistent rate limiting issues.

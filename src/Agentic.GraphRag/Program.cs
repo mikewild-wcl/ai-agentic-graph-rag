@@ -23,7 +23,7 @@ builder.Services
     .RegisterBlazorPersistenceServices()
     .RegisterResiliencePipelines()
     .RegisterHttpClients()
-    .RegisterGraphDatabase()    ;
+    .RegisterGraphDatabase();
 
 builder.Services.AddHsts(options =>
 {

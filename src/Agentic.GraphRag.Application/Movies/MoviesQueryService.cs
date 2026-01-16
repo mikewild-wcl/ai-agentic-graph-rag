@@ -1,6 +1,5 @@
 using Agentic.GraphRag.Application.Movies.Interfaces;
 using Microsoft.Extensions.Logging;
-using Neo4j.Driver;
 
 namespace Agentic.GraphRag.Application.Movies;
 

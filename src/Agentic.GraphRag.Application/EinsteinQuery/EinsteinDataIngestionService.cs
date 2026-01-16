@@ -1,11 +1,11 @@
 using Agentic.GraphRag.Application.Chunkers.Interfaces;
 using Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
+using Agentic.GraphRag.Application.Extensions;
 using Agentic.GraphRag.Application.Services.Interfaces;
 using Agentic.GraphRag.Application.Settings;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic;
 using Polly.Registry;
 using System.Globalization;
 using System.Text;
@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery;
 
-public sealed class EinsteinDataIngestionService(
+public sealed partial class EinsteinDataIngestionService(
     IEinsteinQueryDataAccess dataAccess,
     IDownloadService downloadService,
     IDocumentChunker documentChunker,
@@ -22,6 +22,8 @@ public sealed class EinsteinDataIngestionService(
     IOptions<EinsteinQuerySettings> queryOptions,
     ILogger<EinsteinDataIngestionService> logger) : IEinsteinDataIngestionService
 {
+    private const int BatchSize = 10;
+
     private readonly IEinsteinQueryDataAccess _dataAccess = dataAccess;
     private readonly IDownloadService _downloadService = downloadService;
     private readonly IDocumentChunker _documentChunker = documentChunker;
@@ -30,7 +32,8 @@ public sealed class EinsteinDataIngestionService(
     private readonly ILogger<EinsteinDataIngestionService> _logger = logger;
     private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider = resiliencePipelineProvider;
 
-    private const int BatchSize = 10;
+    [GeneratedRegex(@"(?<=/)([^/]+)(?=\\.pdf(?:\\?|$))")]
+    private static partial Regex ExtractPdfIdRegex();
 
     private static readonly Action<ILogger, string, Exception?> _fileNotFoundLog =
         LoggerMessage.Define<string>(
@@ -120,13 +123,9 @@ public sealed class EinsteinDataIngestionService(
             _logger.LogInformation("Chunk: {Chunk}", chunk);
 #pragma warning restore CA1848 // Use the LoggerMessage delegates
             
-            var embedding = await resiliencePipeline.ExecuteAsync(
-                async ct =>
-                {
-                    return await _embeddingGenerator
-                        .GenerateVectorAsync(chunk, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-                },
+            var embedding = await resiliencePipeline.GetTextEmbedding(
+                chunk, 
+                _embeddingGenerator, 
                 cancellationToken).ConfigureAwait(false);
 
             if (_logger.IsEnabled(LogLevel.Debug))
@@ -162,8 +161,10 @@ public sealed class EinsteinDataIngestionService(
 
     private async Task ExtractAndSaveParentAndChildChunks(string filePath, CancellationToken cancellationToken)
     {
-        var pdfIdPattern = new Regex(@"(?<=/)([^/]+)(?=\\.pdf(?:\\?|$))");
+        var pdfIdPattern = ExtractPdfIdRegex();
         var pdfId = pdfIdPattern.Matches(filePath).FirstOrDefault()?.ToString() ?? "unknown";
+
+        var resiliencePipeline = _resiliencePipelineProvider.GetPipeline(ResiliencePipelineNames.RateLimitHitRetry);
 
         await foreach (var section in _documentChunker.StreamSections(filePath, cancellationToken).ConfigureAwait(true))
         {
@@ -175,7 +176,11 @@ public sealed class EinsteinDataIngestionService(
             var embeddings = new List<ReadOnlyMemory<float>>();
             foreach (var chunk in section.ChildChunks)
             {
-                var embedding = await _embeddingGenerator.GenerateVectorAsync(chunk, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var embedding = await resiliencePipeline.GetTextEmbedding(
+                    chunk,
+                    _embeddingGenerator,
+                    cancellationToken).ConfigureAwait(false);
+
                 embeddings.Add(embedding);
             }
 

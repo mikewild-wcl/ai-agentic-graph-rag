@@ -1,5 +1,4 @@
 ﻿using Agentic.GraphRag.Application.Data.Interfaces;
-using Microsoft.Extensions.AI;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
 
