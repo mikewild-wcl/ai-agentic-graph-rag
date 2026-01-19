@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+  
   <ItemGroup>
      <PackageReference Include="FluentAssertions" />
      <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -23,7 +28,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-	  <NoWarn>CA1515;</NoWarn>
 	  <NoWarn>CA1707;</NoWarn> <!-- Allow underscores in test names -->
   </PropertyGroup>
 

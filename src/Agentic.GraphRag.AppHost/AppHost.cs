@@ -2,6 +2,7 @@ using Agentic.GraphRag.AppHost.Extensions;
 using Agentic.GraphRag.AppHost.ParameterDefaults;
 using Agentic.GraphRag.Shared;
 using Microsoft.Extensions.Configuration;
+using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -52,7 +53,7 @@ else if (addDockerContainers && graphDBProvider.GetValue() == "memgraph")
 
 var (chatModel, embeddingModel) = builder.AddAIModels("ai-service");
 
-builder.AddProject<Projects.Agentic_GraphRag>(ProjectNames.GraphRagBlazorApp)
+builder.AddProject<GraphRag>(ProjectNames.GraphRagBlazorApp)
     .WithAIModels(chatModel, embeddingModel)
     .WithHttpsEndpoint() //Force https if a non-standard launch profile is selected
     .WithEnvironment($"{ResourceNames.GraphDatabaseSection}:{ResourceNames.Provider}", graphDBProvider)
