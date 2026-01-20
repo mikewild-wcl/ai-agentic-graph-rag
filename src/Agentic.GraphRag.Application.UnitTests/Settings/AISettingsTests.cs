@@ -17,12 +17,12 @@ public class AISettingsTests
         var options = new AISettings(provider, deploymentName, modelName, timeout);
 
         // Assert
-        options.Provider.Should().Be(provider);
-        options.DeploymentName.Should().Be(deploymentName);
-        options.Model.Should().Be(modelName);
-        options.EmbeddingDeploymentName.Should().BeNull();
-        options.EmbeddingModel.Should().BeNull();
-        options.Timeout.Should().Be(timeout);
+        options.Provider.ShouldBe(provider);
+        options.DeploymentName.ShouldBe(deploymentName);
+        options.Model.ShouldBe(modelName);
+        options.EmbeddingDeploymentName.ShouldBeNull();
+        options.EmbeddingModel.ShouldBeNull();
+        options.Timeout.ShouldBe(timeout);
     }
 
     [Fact]
@@ -38,12 +38,12 @@ public class AISettingsTests
         var options = new AISettings(provider, deploymentName, modelName);
 
         // Assert
-        options.Provider.Should().Be(provider);
-        options.DeploymentName.Should().Be(deploymentName);
-        options.Model.Should().Be(modelName);
-        options.EmbeddingDeploymentName.Should().BeNull();
-        options.EmbeddingModel.Should().BeNull();
-        options.Timeout.Should().Be(defaultTimeout);
+        options.Provider.ShouldBe(provider);
+        options.DeploymentName.ShouldBe(deploymentName);
+        options.Model.ShouldBe(modelName);
+        options.EmbeddingDeploymentName.ShouldBeNull();
+        options.EmbeddingModel.ShouldBeNull();
+        options.Timeout.ShouldBe(defaultTimeout);
     }
 
     [Fact]
@@ -77,12 +77,12 @@ public class AISettingsTests
         };
 
         //Assert
-        options.Provider.Should().Be(provider);
-        options.DeploymentName.Should().Be(deploymentName);
-        options.Model.Should().Be(modelName);
-        options.EmbeddingDeploymentName.Should().Be(embeddingDeploymentName);
-        options.EmbeddingModel.Should().Be(embeddingModelName);
-        options.Timeout.Should().Be(timeout);
+        options.Provider.ShouldBe(provider);
+        options.DeploymentName.ShouldBe(deploymentName);
+        options.Model.ShouldBe(modelName);
+        options.EmbeddingDeploymentName.ShouldBe(embeddingDeploymentName);
+        options.EmbeddingModel.ShouldBe(embeddingModelName);
+        options.Timeout.ShouldBe(timeout);
     }
 
     [Fact]
@@ -92,6 +92,6 @@ public class AISettingsTests
         var options = new AISettings(AIProvider.GitHubModels, "a", "b") { Timeout = 99 };
 
         // Assert
-        options.Timeout.Should().Be(99);
+        options.Timeout.ShouldBe(99);
     }
 }

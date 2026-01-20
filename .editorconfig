@@ -274,3 +274,14 @@ dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 # Disable specific rules
 dotnet_diagnostic.CA1308.severity = none
 dotnet_diagnostic.CA1515.severity = none
+
+# Aspire ServiceDefaults project rules
+[**/*ServiceDefaults/**.cs] 
+dotnet_style_namespace_match_folder = false:silent # IDE0130
+dotnet_diagnostic.CA1062.severity = none # CA1062:Validate arguments of public methods
+dotnet_diagnostic.CA1307.severity = none # CA1307:Specify StringComparison for clarity
+dotnet_diagnostic.S125.severity = silent # S125:Remove this commented out code
+
+# Unit test project rules
+[**/*Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none # Allow underscores in test names

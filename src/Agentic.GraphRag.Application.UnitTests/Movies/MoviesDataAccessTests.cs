@@ -30,7 +30,7 @@ public class MoviesDataAccessTests
         {
             // Assert
             var databaseValue = sut.GetPrivateField(DATABASE_NAME_FIELD);
-            databaseValue.Should().Be(DATABASE_NAME);
+            databaseValue.ShouldBe(DATABASE_NAME);
         }
     }
 }

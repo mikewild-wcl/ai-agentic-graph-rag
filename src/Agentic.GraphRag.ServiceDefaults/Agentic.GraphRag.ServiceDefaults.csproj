@@ -16,8 +16,4 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <!-- Suppress warnings on generated code in the ServiceDefaults project -->
-    <NoWarn>CA1307;CA1062;CA1724;S125</NoWarn>
-  </PropertyGroup>
 </Project>

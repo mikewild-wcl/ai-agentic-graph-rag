@@ -1,6 +1,7 @@
 using Agentic.GraphRag.Application.Movies;
 using Agentic.GraphRag.Application.Movies.Interfaces;
 using Microsoft.Extensions.Logging;
+using Shouldly;
 
 namespace Agentic.GraphRag.Application.UnitTests.Movies;
 
@@ -35,7 +36,7 @@ public class MoviesQueryServiceTests
         var result = await _sut.GetMoviesForActor(actorName, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Should().BeEquivalentTo(expectedTitles);
+        result.ShouldBeEquivalentTo(expectedTitles);
     }
 
     [Fact]
@@ -51,7 +52,7 @@ public class MoviesQueryServiceTests
         var result = await _sut.GetMoviesForActor(actorName, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Should().BeEmpty();
+        result.ShouldNotBeNull();
+        result.ShouldBeEmpty();
     }
 }

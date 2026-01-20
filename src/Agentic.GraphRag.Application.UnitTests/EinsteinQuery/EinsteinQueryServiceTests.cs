@@ -44,6 +44,6 @@ public class EinsteinQueryServiceTests
     public void Constructor_Succeeds()
     {
         // Assert
-        _sut.Should().NotBeNull();
+        _sut.ShouldNotBeNull();
     }
 }

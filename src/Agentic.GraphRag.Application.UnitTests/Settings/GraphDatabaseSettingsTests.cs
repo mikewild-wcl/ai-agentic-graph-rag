@@ -19,14 +19,14 @@ public class GraphDatabaseSettingsTests
         var options = new GraphDatabaseSettings(connection, user, password);
 
         // Assert
-        options.Connection.Should().Be(connection);
-        options.User.Should().Be(user);
-        options.Password.Should().Be(password);
-        options.Provider.Should().Be(defaultProvider);
-        options.EinsteinVectorDb.Should().Be(defaultDb);
-        options.MoviesDb.Should().Be(defaultDb);
-        options.UfoDb.Should().Be(defaultDb);
-        options.Timeout.Should().Be(defaultTimeout);
+        options.Connection.ShouldBe(connection);
+        options.User.ShouldBe(user);
+        options.Password.ShouldBe(password);
+        options.Provider.ShouldBe(defaultProvider);
+        options.EinsteinVectorDb.ShouldBe(defaultDb);
+        options.MoviesDb.ShouldBe(defaultDb);
+        options.UfoDb.ShouldBe(defaultDb);
+        options.Timeout.ShouldBe(defaultTimeout);
     }
 
     [Fact]
@@ -64,14 +64,14 @@ public class GraphDatabaseSettingsTests
         };
 
         //Assert
-        options.Connection.Should().Be(connection);
-        options.User.Should().Be(user);
-        options.Password.Should().Be(password);
-        options.Provider.Should().Be(provider);
-        options.EinsteinVectorDb.Should().Be(einsteinVectorDb);
-        options.MoviesDb.Should().Be(moviesDb);
-        options.UfoDb.Should().Be(ufoDb);
-        options.Timeout.Should().Be(timeout);
+        options.Connection.ShouldBe(connection);
+        options.User.ShouldBe(user);
+        options.Password.ShouldBe(password);
+        options.Provider.ShouldBe(provider);
+        options.EinsteinVectorDb.ShouldBe(einsteinVectorDb);
+        options.MoviesDb.ShouldBe(moviesDb);
+        options.UfoDb.ShouldBe(ufoDb);
+        options.Timeout.ShouldBe(timeout);
     }
 
     [Fact]
@@ -88,10 +88,10 @@ public class GraphDatabaseSettingsTests
         };
 
         // Assert
-        options.Provider.Should().Be("memgraph");
-        options.EinsteinVectorDb.Should().Be("einstein");
-        options.MoviesDb.Should().Be("movies");
-        options.UfoDb.Should().Be("ufo");
-        options.Timeout.Should().Be(99);
+        options.Provider.ShouldBe("memgraph");
+        options.EinsteinVectorDb.ShouldBe("einstein");
+        options.MoviesDb.ShouldBe("movies");
+        options.UfoDb.ShouldBe("ufo");
+        options.Timeout.ShouldBe(99);
     }
 }

@@ -6,9 +6,9 @@
   </PropertyGroup>
   
   <ItemGroup>
-     <PackageReference Include="FluentAssertions" />
      <PackageReference Include="Microsoft.NET.Test.Sdk" />
      <PackageReference Include="Moq" />
+     <PackageReference Include="Shouldly" />
      <PackageReference Include="xunit.runner.visualstudio">
   	   <PrivateAssets>all</PrivateAssets>
   	   <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,13 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="FluentAssertions" />
+    <Using Include="Shouldly" />
     <Using Include="Moq" />
     <Using Include="Xunit" />
   </ItemGroup>
-
-  <PropertyGroup>
-	  <NoWarn>CA1707;</NoWarn> <!-- Allow underscores in test names -->
-  </PropertyGroup>
 
 </Project>

@@ -36,7 +36,7 @@ public class Neo4jDataAccessTests
         {
             // Assert
             var databaseValue = sut.GetPrivateField(DATABASE_NAME_FIELD);
-            databaseValue.Should().Be(TEST_DATABASE_NAME);
+            databaseValue.ShouldBe(TEST_DATABASE_NAME);
         }
     }
 
@@ -44,21 +44,18 @@ public class Neo4jDataAccessTests
     public void Constructor_WithEmptyDatabaseName_ThrowsException()
     {
         // Act and Assert
-        FluentActions.Invoking(() => new TestNeo4jDataAccess(Mock.Of<IDriver>(),
+        Should.Throw<ArgumentException>(() => new TestNeo4jDataAccess(Mock.Of<IDriver>(),
             string.Empty,
-            NullLogger<Neo4jDataAccess>.Instance))
-            .Should().Throw<ArgumentException>();
+            NullLogger<Neo4jDataAccess>.Instance));
     }
 
     [Fact]
     public void Constructor_WithNullDatabaseName_ThrowsException()
     {
         // Act and Assert
-
-        FluentActions.Invoking(() => new TestNeo4jDataAccess(Mock.Of<IDriver>(),
+        Should.Throw<ArgumentNullException>(() => new TestNeo4jDataAccess(Mock.Of<IDriver>(),
             null!,
-            NullLogger<Neo4jDataAccess>.Instance))
-            .Should().Throw<ArgumentNullException>();
+            NullLogger<Neo4jDataAccess>.Instance));
     }
 
     [Fact]
@@ -104,7 +101,7 @@ public class Neo4jDataAccessTests
             var result = await sut.ExecuteReadListAsync(query, returnKey);
 
             // Assert
-            result.Should().ContainSingle().Which.Should().Be(expectedValue);
+            result.ShouldHaveSingleItem(expectedValue);
             txMock.Verify(t => t.RunAsync(query, It.IsAny<IDictionary<string, object>?>()), Times.Once);
             txMock.Verify(t => t.RunAsync(query, It.Is<IDictionary<string, object>?>(dic => dic != null && dic.Count == 0)), Times.Once);
         }
@@ -157,7 +154,7 @@ public class Neo4jDataAccessTests
             var result = await sut.ExecuteReadListAsync(query, returnKey, parameters);
 
             // Assert
-            result.Should().ContainSingle().Which.Should().Be(expectedValue);
+            result.ShouldHaveSingleItem(expectedValue);
             txMock.Verify(t => t.RunAsync(query, It.IsAny<IDictionary<string, object>?>()), Times.Once);
             txMock.Verify(t => t.RunAsync(query, It.Is<IDictionary<string, object>?>(dic => dic != null && dic.Count == 1)), Times.Once);
             txMock.Verify(t => t.RunAsync(query, It.Is<IDictionary<string, object>?>(dic => dic != null && dic.ContainsKey(parameter) && dic[parameter] as string == parameterValue)), Times.Once);
