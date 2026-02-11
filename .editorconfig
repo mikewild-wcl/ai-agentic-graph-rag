@@ -280,7 +280,13 @@ dotnet_diagnostic.CA1515.severity = none
 dotnet_style_namespace_match_folder = false:silent # IDE0130
 dotnet_diagnostic.CA1062.severity = none # CA1062:Validate arguments of public methods
 dotnet_diagnostic.CA1307.severity = none # CA1307:Specify StringComparison for clarity
+dotnet_diagnostic.CA1724.severity = none # CA1724: Type name Extensions conflicts with namespace 'Microsoft.AspNetCore.Builder.Extensions'
 dotnet_diagnostic.S125.severity = silent # S125:Remove this commented out code
+
+# Shared project rules
+[**/*Shared/**.cs]
+# CA1716: Identifiers should not match keywords. Allow in NameSpace to fix conflict with reserved language keyword 'Shared'
+dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method, Property, Event, Parameter
 
 # Unit test project rules
 [**/*Tests/**.cs]

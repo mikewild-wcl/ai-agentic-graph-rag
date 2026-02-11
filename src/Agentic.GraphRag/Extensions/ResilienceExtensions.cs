@@ -1,11 +1,8 @@
 ﻿using Agentic.GraphRag.Application.Settings;
-using Azure.Core;
-using OllamaSharp.Models.Chat;
 using Polly;
 using Polly.Retry;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Agentic.GraphRag.Extensions;
 

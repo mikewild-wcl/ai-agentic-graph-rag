@@ -4,7 +4,6 @@ using Agentic.GraphRag.Application.UnitTests.TestExtensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Neo4j.Driver;
-using Shouldly;
 
 namespace Agentic.GraphRag.Application.UnitTests.EinsteinQuery;
 

@@ -1,7 +1,6 @@
 using Agentic.GraphRag.Application.Movies;
 using Agentic.GraphRag.Application.Movies.Interfaces;
 using Microsoft.Extensions.Logging;
-using Shouldly;
 
 namespace Agentic.GraphRag.Application.UnitTests.Movies;
 

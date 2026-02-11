@@ -5,7 +5,6 @@ using Agentic.GraphRag.Shared.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using Polly;
 using Polly.Registry;
 using System.Web;
 
@@ -110,7 +109,7 @@ public sealed class EinsteinQueryService(
             The question to answer using information only from the above documents: {encodedinput}
             """;
 
-        var agent = _chatClient.CreateAIAgent(
+        var agent = _chatClient.AsAIAgent(
             instructions:
                 """
                 You're an expert on Albert Einstein, but can only use provided documents to respond to questions.
@@ -118,16 +117,18 @@ public sealed class EinsteinQueryService(
 
                 If I refer to "Albert" I mean "Albert Einstein".
                 """,
-            name: "EinsteinAssistant"
-            );
+            name: "EinsteinAssistant");
 
-        var response = await agent.RunAsync(prompt, null, new AgentRunOptions(), cancellationToken).ConfigureAwait(false);
+        var response = await agent
+            .RunAsync(prompt, null, new AgentRunOptions(), cancellationToken)
+            .ConfigureAwait(false);
+        
         return response.Text;
     }
 
     private async Task<string> GenerateStepBackPrompt(string userInput, CancellationToken cancellationToken)
     {
-        var agent = _chatClient.CreateAIAgent(
+        var agent = _chatClient.AsAIAgent(
             instructions:
                 """
                 You are an expert at world knowledge. Your task is to step back
@@ -141,12 +142,12 @@ public sealed class EinsteinQueryService(
                 "input": "Bob Smith was born in what country?"
                 "output": "What is Bob Smith’s personal history?"
                 """,
-            name: "StepbackAgent"
-            );
+            name: "StepbackAgent");
 
         var response = await agent
             .RunAsync(HttpUtility.HtmlEncode(userInput), null, new AgentRunOptions(), cancellationToken)
             .ConfigureAwait(false);
+
         return response.Text;
     }
 }
