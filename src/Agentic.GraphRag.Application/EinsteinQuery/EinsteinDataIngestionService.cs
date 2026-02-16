@@ -166,15 +166,15 @@ public sealed partial class EinsteinDataIngestionService(
 
         var resiliencePipeline = _resiliencePipelineProvider.GetPipeline(ResiliencePipelineNames.RateLimitHitRetry);
 
-        await foreach (var section in _documentChunker.StreamSections(filePath, cancellationToken).ConfigureAwait(true))
+        await foreach (var (sectionId, sectionText, childChunks) in _documentChunker.StreamSections(filePath, cancellationToken).ConfigureAwait(true))
         {
-            if (string.IsNullOrWhiteSpace(section.SectionText))
+            if (string.IsNullOrWhiteSpace(sectionText))
             {
                 continue;
             }
 
             var embeddings = new List<ReadOnlyMemory<float>>();
-            foreach (var chunk in section.ChildChunks)
+            foreach (var chunk in childChunks)
             {
                 var embedding = await resiliencePipeline.GetTextEmbedding(
                     chunk,
@@ -186,9 +186,9 @@ public sealed partial class EinsteinDataIngestionService(
 
             await _dataAccess.SaveParentAndChildChunks(
                 pdfId,
-                section.SectionId,
-                section.SectionText,
-                section.ChildChunks,
+                sectionId,
+                sectionText,
+                childChunks,
                 embeddings)
                 .ConfigureAwait(false);
         }

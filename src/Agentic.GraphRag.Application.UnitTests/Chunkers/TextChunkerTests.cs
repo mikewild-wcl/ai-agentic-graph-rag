@@ -152,7 +152,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 0);
-        chunks[0].ShouldBeSameAs(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 1);
-        chunks[0].ShouldBeSameAs(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 2);
-        chunks[0].ShouldBeSameAs(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Theory]

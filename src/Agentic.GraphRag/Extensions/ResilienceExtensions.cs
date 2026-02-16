@@ -57,6 +57,7 @@ internal static class ResilienceExtensions
                     * Consider switching to Exponential if you observe persistent rate limiting issues.
                     */
                    Delay = TimeSpan.FromSeconds(20),
+                   //TODO: Remove either Delay or  DelayGenerator after we confirm that we can get Retry-After header in
                    DelayGenerator = d =>
                    {
                        //TODO: Can we get request  Retry-After header here?
