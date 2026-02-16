@@ -34,7 +34,7 @@ var addDockerContainers =
 if (addDockerContainers && graphDBProvider.GetValue() == "neo4j")
 {
     var neo4jContainer = builder.AddDockerfile(
-        "neo4j", "./", "Dockerfile")      
+        "neo4j", "./", "Dockerfile")
         .WithEndpoint(7474, scheme: "http", targetPort: 7474)
         .WithEndpoint(7687, scheme: "bolt", targetPort: 7687)
         .WithEnvironment("NEO4J_AUTH", $"{graphDBUser.GetValue()}/{graphDBPassword.GetValue()}")
