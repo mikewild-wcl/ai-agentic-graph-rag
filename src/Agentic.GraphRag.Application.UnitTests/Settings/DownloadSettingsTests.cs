@@ -15,8 +15,8 @@ public class DownloadSettingsTests
         var options = new DownloadSettings(downloadDirectory);
 
         // Assert
-        options.DownloadDirectory.Should().Be(downloadDirectory);
-        options.Timeout.Should().Be(defaultTimeout);
+        options.DownloadDirectory.ShouldBe(downloadDirectory);
+        options.Timeout.ShouldBe(defaultTimeout);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public class DownloadSettingsTests
         };
 
         //Assert
-        options.DownloadDirectory.Should().Be(downloadDirectory);
-        options.Timeout.Should().Be(timeout);
+        options.DownloadDirectory.ShouldBe(downloadDirectory);
+        options.Timeout.ShouldBe(timeout);
     }
 
     [Fact]
@@ -53,6 +53,6 @@ public class DownloadSettingsTests
         };
 
         // Assert
-        options.Timeout.Should().Be(99);
+        options.Timeout.ShouldBe(99);
     }
 }

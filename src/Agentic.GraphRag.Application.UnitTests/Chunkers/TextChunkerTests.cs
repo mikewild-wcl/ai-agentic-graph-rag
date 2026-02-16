@@ -5,31 +5,51 @@ namespace Agentic.GraphRag.Application.UnitTests.Chunkers;
 public class TextChunkerTests(ITestOutputHelper output)
 {
     private readonly ITestOutputHelper _output = output;
-    
+
     private static readonly string[] NoOverlapExpected = ["abcd", "efgh", "ij"];
     private static readonly string[] OverlapOneExpected = ["abcde", "defghi", "hij"];
-    private static readonly string[] OverlapTwoExpected = ["abcdef", "cdefghij","ghij"];
+    private static readonly string[] OverlapTwoExpected = ["abcdef", "cdefghij", "ghij"];
 
     [Fact]
     public void ChunkText_ReturnsEmptyArray_WhenTextIsNullOrEmpty()
     {
-        TextChunker.ChunkText(null!).Should().BeEmpty();
-        TextChunker.ChunkText("").Should().BeEmpty();
+        TextChunker.ChunkText(null!).ShouldBeEmpty();
+        TextChunker.ChunkText("").ShouldBeEmpty();
     }
 
     [Fact]
-    public void ChunkText_Throws_ArgumentException_WhenChunkSizeInvalid()
+    public void ChunkText_Throws_ArgumentException_WhenChunkSizeIsZero()
     {
-        FluentActions.Invoking(() => TextChunker.ChunkText("abc", 0)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkText("abc", -1)).Should().Throw<ArgumentOutOfRangeException>();
+        Action chunkZero = () => TextChunker.ChunkText("abc", 0);
+        chunkZero.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
     [Fact]
-    public void ChunkText_Throws_ArgumentException__WhenOverlapInvalid()
+    public void ChunkText_Throws_ArgumentException_WhenChunkSizeIsNegative()
     {
-        FluentActions.Invoking(() => TextChunker.ChunkText("abc", 3, -1)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkText("abc", 3, 3)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkText("abc", 3, 4)).Should().Throw<ArgumentOutOfRangeException>();
+        Action chunkMinusOne = () => TextChunker.ChunkText("abc", -1);
+        chunkMinusOne.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkText_Throws_ArgumentException_WhenOverlapIsNegative()
+    {
+        Action act = () => TextChunker.ChunkText("abc", 3, -1);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkText_Throws_ArgumentException_WhenOverlapEqualToLength()
+    {
+        Action act = () => TextChunker.ChunkText("abc", 3, 3);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkText_Throws_ArgumentException_WhenOverlapGreaterThanLength()
+    {
+        Action act = () => TextChunker.ChunkText("abc", 3, 4);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -37,7 +57,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkText(text, 4, 0);
-        chunks.Should().BeEquivalentTo(NoOverlapExpected);
+        chunks.ShouldBeEquivalentTo(NoOverlapExpected);
     }
 
     [Fact]
@@ -45,7 +65,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkText(text, 4, 1);
-        chunks.Should().BeEquivalentTo(OverlapOneExpected);
+        chunks.ShouldBeEquivalentTo(OverlapOneExpected);
     }
 
     [Fact]
@@ -53,7 +73,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkText(text, 4, 2);
-        chunks.Should().BeEquivalentTo(OverlapTwoExpected);
+        chunks.ShouldBeEquivalentTo(OverlapTwoExpected);
     }
 
     [Theory]
@@ -82,29 +102,49 @@ public class TextChunkerTests(ITestOutputHelper output)
             _output.WriteLine($"  \"{chunk}\"");
         }
 
-        result.Should().BeEquivalentTo(expected);
+        result.ShouldBeEquivalentTo(expected);
     }
 
     [Fact]
     public void ChunkTextOnWhitespaceOnly_ReturnsEmptyArray_WhenTextIsNullOrEmpty()
     {
-        TextChunker.ChunkTextOnWhitespaceOnly(null!).Should().BeEmpty();
-        TextChunker.ChunkTextOnWhitespaceOnly("").Should().BeEmpty();
+        TextChunker.ChunkTextOnWhitespaceOnly(null!).ShouldBeEmpty();
+        TextChunker.ChunkTextOnWhitespaceOnly("").ShouldBeEmpty();
     }
 
     [Fact]
-    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenChunkSizeInvalid()
+    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenChunkSizeIsZero()
     {
-        FluentActions.Invoking(() => TextChunker.ChunkTextOnWhitespaceOnly("abc", 0)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkTextOnWhitespaceOnly("abc", -1)).Should().Throw<ArgumentOutOfRangeException>();
+        Action act = () => TextChunker.ChunkTextOnWhitespaceOnly("abc", 0);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
     [Fact]
-    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException__WhenOverlapInvalid()
+    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenChunkSizeIsNegative()
     {
-        FluentActions.Invoking(() => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, -1)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, 3)).Should().Throw<ArgumentOutOfRangeException>();
-        FluentActions.Invoking(() => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, 4)).Should().Throw<ArgumentOutOfRangeException>();
+        Action act = () => TextChunker.ChunkTextOnWhitespaceOnly("abc", -1);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenOverlapIsNegative()
+    {
+        Action act = () => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, -1);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenOverlapEqualToLength()
+    {
+        Action act = () => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, 3);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void ChunkTextOnWhitespaceOnly_Throws_ArgumentException_WhenOverlapGreaterThanLength()
+    {
+        Action act = () => TextChunker.ChunkTextOnWhitespaceOnly("abc", 3, 4);
+        act.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -112,7 +152,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 0);
-        chunks.Should().BeEquivalentTo(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Fact]
@@ -120,7 +160,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 1);
-        chunks.Should().BeEquivalentTo(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Fact]
@@ -128,7 +168,7 @@ public class TextChunkerTests(ITestOutputHelper output)
     {
         var text = "abcdefghij";
         var chunks = TextChunker.ChunkTextOnWhitespaceOnly(text, 4, 2);
-        chunks.Should().BeEquivalentTo(text);
+        chunks[0].ShouldBe(text);
     }
 
     [Theory]
@@ -151,7 +191,7 @@ public class TextChunkerTests(ITestOutputHelper output)
             _output.WriteLine($"  \"{chunk}\"");
         }
 
-        result.Should().BeEquivalentTo(expected);
+        result.ShouldBeEquivalentTo(expected);
     }
 
     [Fact]
@@ -189,8 +229,8 @@ public class TextChunkerTests(ITestOutputHelper output)
   "collaborators had patented a wide variety"
   "variety of"
 */
-    string[] expected = [
-        "Einstein’s Patents and",
+        string[] expected = [
+            "Einstein’s Patents and",
         "Patents and Inventions  Asis Kumar",
         "Asis Kumar Chaudhuri Variable Energy",
         "Energy Cyclotron Centre 1‐AF",
@@ -211,14 +251,14 @@ public class TextChunkerTests(ITestOutputHelper output)
         "inventor. He and his collaborators",
         "collaborators had patented a wide variety",
         "variety of"
-        ];
+            ];
 
-        for(var i = 0; i < result.Length; i++)
+        for (var i = 0; i < result.Length; i++)
         {
             _output.WriteLine($"Expected: \"{expected[i]}\"; Actual: \"{result[i]}\"");
-            result[i].Should().Be(expected[i]);
+            result[i].ShouldBe(expected[i]);
         }
-        result.Should().BeEquivalentTo(expected);
+        result.ShouldBeEquivalentTo(expected);
         /*
          */
     }

@@ -1,6 +1,6 @@
 #!meta
 
-{"kernelInfo":{"defaultKernelName":"csharp","items":[{"name":"csharp","languageName":"csharp"},{"name":"fsharp","languageName":"F#","aliases":["f#","fs"]},{"name":"html","languageName":"HTML"},{"name":"http","languageName":"HTTP"},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"mermaid","languageName":"Mermaid"},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"value"}]}}
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"name":"csharp","languageName":"csharp"},{"name":"fsharp","languageName":"F#","aliases":["f#","fs"]},{"name":"html","languageName":"HTML"},{"name":"http","languageName":"HTTP"},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"mermaid","languageName":"Mermaid"},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"semanticsearchkernelspec","languageName":"python"},{"name":"value"}]}}
 
 #!markdown
 
@@ -8,7 +8,7 @@
 
 #!csharp
 
-//TODO: Will use tiktoken to count tokems
+//TODO: Will use tiktoken to count tokens
 #r "nuget:Tiktoken, 2.2.0"
 #r "nuget:System.Net.Http, 4.3.4"
 
@@ -51,3 +51,4 @@ var text = encoder.Decode(tokens); // hello world
 var numberOfTokens = encoder.CountTokens(text); // 2
 var stringTokens = encoder.Explore(text); // ["hello", " world"]
 */
+

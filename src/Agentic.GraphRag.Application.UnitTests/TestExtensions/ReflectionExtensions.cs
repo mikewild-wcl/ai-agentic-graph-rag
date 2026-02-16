@@ -29,7 +29,7 @@ internal static class ReflectionExtensions
         var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
                     ?? type.BaseType?.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 
-        field.Should().NotBeNull($"expected a private field named '{fieldName}' on the type or its base type");
+        field.ShouldNotBeNull($"expected a private field named '{fieldName}' on the type or its base type");
 
         return field!.GetValue(instance) as string;
     }

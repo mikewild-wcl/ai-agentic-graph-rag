@@ -8,14 +8,10 @@ using Agentic.GraphRag.Application.Services;
 using Agentic.GraphRag.Application.Services.Interfaces;
 using Agentic.GraphRag.Application.Settings;
 using Agentic.GraphRag.Components;
-using Agentic.GraphRag.Shared.Configuration;
-using Azure.AI.OpenAI;
-using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Neo4j.Driver;
-using System.ClientModel;
 
 namespace Agentic.GraphRag.Extensions;
 
@@ -48,9 +44,12 @@ internal static class ServiceCollectionExtensions
         return services;
     }
 
+    internal static IServiceCollection RegisterResiliencePipelines(this IServiceCollection services) =>
+        services
+            .AddTooManyRequestsResiliencePipeline();
+
     internal static IServiceCollection RegisterBlazorPersistenceServices(this IServiceCollection services) =>
         services /* Add services to persist state across navigations (per circuit/session) */
-            .AddScoped<CounterState>()
             .AddScoped<MoviesState>()
             .AddScoped<EinsteinState>();
 

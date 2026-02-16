@@ -1,8 +1,11 @@
 using Agentic.GraphRag.Application.EinsteinQuery.Interfaces;
+using Agentic.GraphRag.Application.Extensions;
+using Agentic.GraphRag.Application.Settings;
 using Agentic.GraphRag.Shared.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Polly.Registry;
 using System.Web;
 
 namespace Agentic.GraphRag.Application.EinsteinQuery;
@@ -11,6 +14,7 @@ public sealed class EinsteinQueryService(
     IChatClient chatClient,
     IEinsteinQueryDataAccess dataAccess,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
+    ResiliencePipelineProvider<string> resiliencePipelineProvider,
     AISettings aiSettings,
     ILogger<EinsteinQueryService> logger) : IEinsteinQueryService
 {
@@ -18,6 +22,7 @@ public sealed class EinsteinQueryService(
     private readonly IEinsteinQueryDataAccess _dataAccess = dataAccess;
     private readonly AISettings _aiSettings = aiSettings;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator = embeddingGenerator;
+    private readonly ResiliencePipelineProvider<string> _resiliencePipelineProvider = resiliencePipelineProvider;
     //private readonly ILogger<EinsteinQueryService> _logger = logger;
 
     /*
@@ -45,6 +50,8 @@ public sealed class EinsteinQueryService(
         CancellationTokenSource? aiCancellationSource = null;
         CancellationTokenSource timeoutTokenSource = new(TimeSpan.FromSeconds(_aiSettings.Timeout ?? Defaults.DefaultTimeoutSeconds));
 
+        var resiliencePipeline = _resiliencePipelineProvider.GetPipeline(ResiliencePipelineNames.RateLimitHitRetry);
+
         if (cancellationToken.CanBeCanceled) // External cancellation token provided, so wrap it
         {
             aiCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
@@ -64,10 +71,12 @@ public sealed class EinsteinQueryService(
 
             var stepBackPrompt = await GenerateStepBackPrompt(userInput, aiCancellationToken).ConfigureAwait(false);
 
-            var embedding = await _embeddingGenerator.GenerateVectorAsync(userInput, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var embedding = await resiliencePipeline.GetTextEmbedding(userInput, _embeddingGenerator, aiCancellationToken).ConfigureAwait(false);
+
             var searchResults = await _dataAccess.QueryParentsAndChildren(embedding).ConfigureAwait(false);
 
-            var stepBackEmbedding = await _embeddingGenerator.GenerateVectorAsync(stepBackPrompt, cancellationToken: aiCancellationToken).ConfigureAwait(false);
+            var stepBackEmbedding = await resiliencePipeline.GetTextEmbedding(stepBackPrompt, _embeddingGenerator, aiCancellationToken).ConfigureAwait(false);
+
             var stepBackSearchResults = await _dataAccess.QuerySimilarRecords(stepBackEmbedding).ConfigureAwait(false);
 
             var standardResponse = await GenerateQuestionResponse(userInput, [.. searchResults.Select(r => r.Text)], aiCancellationToken).ConfigureAwait(false);
@@ -100,7 +109,7 @@ public sealed class EinsteinQueryService(
             The question to answer using information only from the above documents: {encodedinput}
             """;
 
-        var agent = _chatClient.CreateAIAgent(
+        var agent = _chatClient.AsAIAgent(
             instructions:
                 """
                 You're an expert on Albert Einstein, but can only use provided documents to respond to questions.
@@ -108,16 +117,18 @@ public sealed class EinsteinQueryService(
 
                 If I refer to "Albert" I mean "Albert Einstein".
                 """,
-            name: "EinsteinAssistant"
-            );
+            name: "EinsteinAssistant");
 
-        var response = await agent.RunAsync(prompt, null, new AgentRunOptions(), cancellationToken).ConfigureAwait(false);
+        var response = await agent
+            .RunAsync(prompt, null, new AgentRunOptions(), cancellationToken)
+            .ConfigureAwait(false);
+        
         return response.Text;
     }
 
     private async Task<string> GenerateStepBackPrompt(string userInput, CancellationToken cancellationToken)
     {
-        var agent = _chatClient.CreateAIAgent(
+        var agent = _chatClient.AsAIAgent(
             instructions:
                 """
                 You are an expert at world knowledge. Your task is to step back
@@ -131,12 +142,12 @@ public sealed class EinsteinQueryService(
                 "input": "Bob Smith was born in what country?"
                 "output": "What is Bob Smith’s personal history?"
                 """,
-            name: "StepbackAgent"
-            );
+            name: "StepbackAgent");
 
         var response = await agent
             .RunAsync(HttpUtility.HtmlEncode(userInput), null, new AgentRunOptions(), cancellationToken)
             .ConfigureAwait(false);
+
         return response.Text;
     }
 }

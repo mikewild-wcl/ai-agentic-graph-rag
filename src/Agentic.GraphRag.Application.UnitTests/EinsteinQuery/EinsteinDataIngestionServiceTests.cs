@@ -6,6 +6,7 @@ using Agentic.GraphRag.Application.Settings;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly.Registry;
 
 namespace Agentic.GraphRag.Application.UnitTests.EinsteinQuery;
 
@@ -18,6 +19,7 @@ public class EinsteinDataIngestionServiceTests
     private readonly Mock<IDownloadService> _mockDownloadService;
     private readonly Mock<IDocumentChunker> _mockDocumentChunker;
     private readonly Mock<IEmbeddingGenerator<string, Embedding<float>>> _mockEmbeddingGenerator;
+    private readonly Mock<ResiliencePipelineProvider<string>> _mockResiliencePipelineProvider;
 
     private readonly Mock<ILogger<EinsteinDataIngestionService>> _mockLogger;
 
@@ -29,6 +31,7 @@ public class EinsteinDataIngestionServiceTests
         _mockDownloadService = new Mock<IDownloadService>();
         _mockDocumentChunker = new Mock<IDocumentChunker>();
         _mockEmbeddingGenerator = new Mock<IEmbeddingGenerator<string, Embedding<float>>>();
+        _mockResiliencePipelineProvider = new Mock<ResiliencePipelineProvider<string>>();
 
         IOptions<EinsteinQuerySettings> options = new OptionsWrapper<EinsteinQuerySettings>(
             new EinsteinQuerySettings
@@ -44,6 +47,7 @@ public class EinsteinDataIngestionServiceTests
             _mockDownloadService.Object,
             _mockDocumentChunker.Object,
             _mockEmbeddingGenerator.Object,
+            _mockResiliencePipelineProvider.Object,
             options,
             _mockLogger.Object);
     }
@@ -52,6 +56,6 @@ public class EinsteinDataIngestionServiceTests
     public void Constructor_Succeeds()
     {
         // Assert
-        _sut.Should().NotBeNull();
+        _sut.ShouldNotBeNull();
     }
 }

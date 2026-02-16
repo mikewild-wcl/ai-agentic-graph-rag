@@ -16,8 +16,8 @@ public class TextSplitterTests(ITestOutputHelper output)
         var result = TextSplitter.SplitTextByTitles(input);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Empty(result);
+        result.ShouldNotBeNull();
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -30,8 +30,8 @@ public class TextSplitterTests(ITestOutputHelper output)
         var result = TextSplitter.SplitTextByTitles(input);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal(input, result[0]);
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBe(input);
     }
 
     [Fact]
@@ -54,10 +54,10 @@ public class TextSplitterTests(ITestOutputHelper output)
         var result = TextSplitter.SplitTextByTitles(input);
 
         // Assert
-        Assert.Equal(3, result.Length);
-        Assert.Equal("1. Introduction\nThis is the introduction section.", result[0]);
-        Assert.Equal("2. Background\nThis is the background section.", result[1]);
-        Assert.Equal("3. Conclusion\nThis is the conclusion section.", result[2]);
+        result.Length.ShouldBe(3);
+        result[0].ShouldBe("1. Introduction\nThis is the introduction section.");
+        result[1].ShouldBe("2. Background\nThis is the background section.");
+        result[2].ShouldBe("3. Conclusion\nThis is the conclusion section.");
     }
 
     [Fact]
@@ -73,8 +73,8 @@ public class TextSplitterTests(ITestOutputHelper output)
         var result = TextSplitter.SplitTextByTitles(input);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("1. Title Only", result[0]);
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBe("1. Title Only");
     }
 
     [Fact]
@@ -91,8 +91,8 @@ public class TextSplitterTests(ITestOutputHelper output)
         var result = TextSplitter.SplitTextByTitles(input);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("1.   Title With Extra Spaces\nThis is the content.", result[0]);
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBe("1.   Title With Extra Spaces\nThis is the content.");
     }
 
     [Fact]
@@ -126,11 +126,11 @@ public class TextSplitterTests(ITestOutputHelper output)
         }
 
         // Assert
-        Assert.Equal(5, result.Length);
-        Assert.Equal("Preamble text that is not part of any section.", result[0]);
-        Assert.Equal("1. Introduction\nThis is the introduction section.", result[1]);
-        Assert.Equal("2. Background\nThis is the background section.", result[2]);
-        Assert.Equal("2a. Subsection\nThis is a subsection.", result[3]);
-        Assert.Equal("3. Conclusion\nThis is the conclusion section.", result[4]);
+        result.Length.ShouldBe(5);
+        result[0].ShouldBe("Preamble text that is not part of any section.");
+        result[1].ShouldBe("1. Introduction\nThis is the introduction section.");
+        result[2].ShouldBe("2. Background\nThis is the background section.");
+        result[3].ShouldBe("2a. Subsection\nThis is a subsection.");
+        result[4].ShouldBe("3. Conclusion\nThis is the conclusion section.");
     }
 }

@@ -19,8 +19,8 @@ public class EinsteinQuerySettingsTests
         };
 
         // Assert
-        options.DocumentFileName.Should().Be(documentFileName);
-        options.DocumentUri.Should().Be(documentUri);
+        options.DocumentFileName.ShouldBe(documentFileName);
+        options.DocumentUri.ShouldBe(documentUri);
     }
 
     [Fact]
@@ -44,8 +44,8 @@ public class EinsteinQuerySettingsTests
         };
 
         //Assert
-        options.DocumentFileName.Should().Be(documentFileName);
-        options.DocumentUri.Should().Be(documentUri);
+        options.DocumentFileName.ShouldBe(documentFileName);
+        options.DocumentUri.ShouldBe(documentUri);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class EinsteinQuerySettingsTests
         };
 
         // Assert
-        options.DocumentFileName.Should().Be("mydoc.pdf");
-        options.DocumentUri.AbsoluteUri.Should().Be("http://localhost/test");
+        options.DocumentFileName.ShouldBe("mydoc.pdf");
+        options.DocumentUri.AbsoluteUri.ShouldBe("http://localhost/test");
     }
 }

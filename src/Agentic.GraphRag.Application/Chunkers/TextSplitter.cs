@@ -2,8 +2,16 @@
 
 namespace Agentic.GraphRag.Application.Chunkers;
 
-public static class TextSplitter
+public static partial class TextSplitter
 {
+    /* 
+     Match lines starting with one or more digits,
+     an optional uppercase letter, followed by a dot, a space, and then up to 60 characters.
+     Allow spaces before the number and newlines before the title.
+    */
+    [GeneratedRegex(@"\n*\s*\d+[A-Za-z]?\.\s{1,3}.{0,60}\n", RegexOptions.Multiline)]
+    private static partial Regex TitleExtractionRegex();
+
     public static string[] SplitTextByTitles(string text)
     {
         if (string.IsNullOrEmpty(text))
@@ -11,12 +19,7 @@ public static class TextSplitter
             return [];
         }
 
-        /* 
-         Match lines starting with one or more digits,
-         an optional uppercase letter, followed by a dot, a space, and then up to 60 characters.
-         Allow spaces before the number and newlines before the title.
-        */
-        var titlePattern = new Regex(@"\n*\s*\d+[A-Za-z]?\.\s{1,3}.{0,60}\n", RegexOptions.Multiline);
+        var titlePattern = TitleExtractionRegex();
         var titles = titlePattern.Matches(text);
 
         // Split the text at these titles
