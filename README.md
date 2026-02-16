@@ -51,7 +51,7 @@ To set this up:
 
 ## Resilience
 
-Timeouts can occur occur with Ollama models because generating responses or loading large models can take 
+Timeouts can occur with Ollama models because generating responses or loading large models can take 
 longer than the default 10-second resilience timeout in .NET Aspire or the 5-minute default model unloading time in Ollama.
 To address this a new policy extension `AddOllamaResilienceHandler` has been added and applied in 
 `AIServiceExtensions.AddAIProvider` when Ollama is used. 
